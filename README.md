@@ -2,6 +2,8 @@
 
 Welcome to the **K-Panel** hands-on multi-agent workshop! This repository serves as the official interactive environment and code foundation for our multi-agent workshop session at **Nasscom Future Forge 2026**.
 
+> **Workshop participants:** Follow the [interactive 5-step K-Panel setup guide](https://gouthamkumar-r.github.io/multi-agent-k-panel/KPANEL_SETUP_EXECUTIVE.html) to prepare your machine and follow along during the session.
+
 ---
 
 ## 📅 Event & Session Overview
