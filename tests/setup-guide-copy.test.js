@@ -10,13 +10,11 @@ function loadGuideScript() {
   const handlers = {};
   const timers = [];
   const created = [];
-  const code = { textContent: "chmod +x start-in-mac.sh\n./start-in-mac.sh" };
-  const label = { textContent: "Run one platform command" };
-  const command = {
+  const code = { textContent: "./start-in-mac.sh" };
+  const commandLine = {
     children: [],
     querySelector(selector) {
-      if (selector === "pre code") return code;
-      if (selector === ".label") return label;
+      if (selector === "code") return code;
       return null;
     },
     append(node) { this.children.push(node); },
@@ -28,7 +26,7 @@ function loadGuideScript() {
   const document = {
     body,
     querySelectorAll(selector) {
-      if (selector === ".command") return [command];
+      if (selector === ".command-line") return [commandLine];
       return [];
     },
     querySelector() { return null; },
@@ -58,7 +56,7 @@ function loadGuideScript() {
     WeakMap,
   });
   vm.runInContext(script, context);
-  return { body, command, context, created, handlers, timers, writes };
+  return { body, commandLine, context, created, handlers, timers, writes };
 }
 
 test("uses an always-light visual palette", () => {
@@ -68,16 +66,28 @@ test("uses an always-light visual palette", () => {
   assert.doesNotMatch(html, /--bg:\s*#070b16/);
 });
 
-test("adds an accessible copy button and copies exact command text", async () => {
+test("adds one accessible copy button for an individual command", async () => {
   const guide = loadGuideScript();
-  const button = guide.command.children.find((node) => node.className === "copy-button");
+  const button = guide.commandLine.children.find((node) => node.className === "copy-button");
   assert.ok(button);
   assert.equal(button.type, "button");
   assert.match(button["aria-label"], /^Copy /);
   await guide.handlers.click();
-  assert.deepEqual(guide.writes, ["chmod +x start-in-mac.sh\n./start-in-mac.sh"]);
+  assert.deepEqual(guide.writes, ["./start-in-mac.sh"]);
   assert.equal(button.textContent, "Copied");
   assert.equal(guide.body.children[0]["aria-live"], "polite");
+});
+
+test("renders individual copy rows only for shell commands", () => {
+  assert.equal((html.match(/class="command-line"/g) || []).length, 9);
+  assert.doesNotMatch(html, /class="command"[\s\S]*?<pre><code>/);
+});
+
+test("shows both white logos and the approved step structure", () => {
+  assert.match(html, /\.brand-logo\s*\{[^}]*background:\s*#18324f/s);
+  assert.match(html, /Launch Multi-Agent Blueprint from your operating system/);
+  assert.match(html, /Run the multi-agent panel and visualize the PRD/);
+  assert.match(html, /Optional: Create a custom persona agent/);
 });
 
 test("falls back to a temporary textarea when Clipboard API rejects", async () => {
