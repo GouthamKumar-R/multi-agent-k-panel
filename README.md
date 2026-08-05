@@ -12,8 +12,8 @@ Welcome to the **K-Panel** hands-on multi-agent workshop! This repository serves
 - **Registration**: [Register Now](https://lnkd.in/daZE65BH)
 - **Theme**: Deeptech at Scale — Spanning identity infrastructure, autonomous robotics, applied AI, and cybersecurity to answer how India builds enterprise-ready systems that hold up at scale.
 
-### 🎙️ Workshop Panel & Facilitators - NetApp
-- **Aditi Sharma Goyal**
+### 🎙️ Workshop Panel & Facilitators
+- **Aditi Sharma Goyal** — Director, AI Product Management, NetApp
 - **Srivatsan Sundaravaradan**
 - **Kaushal Srivastava**
 - **Goutham Kumar**
@@ -39,11 +39,26 @@ Welcome to the **K-Panel** hands-on multi-agent workshop! This repository serves
 ### Prerequisites
 - **Python 3.9+** installed
 - Internet access (for LLM API calls and CDN resources)
-- An OpenAI-compatible API key (OpenAI, OpenRouter, Azure OpenAI, or custom local proxy)
+- An OpenAI-compatible API key (Groq, OpenRouter, Gemini, OpenAI, or local Ollama).  
+  📘 **See the full [LLM_GUIDE.md](LLM_GUIDE.md) for direct key links and setup guides.**
+
+#### 🔑 LLM Provider Quick Setup Summary
+
+| Provider | Direct Key Link | Base URL | Recommended Model Name |
+| :--- | :--- | :--- | :--- |
+| **⚡ GroqCloud** | [console.groq.com/keys](https://console.groq.com/keys) | `https://api.groq.com/openai/v1` | `llama-3.3-70b-versatile` |
+| **🌐 OpenRouter** | [openrouter.ai/keys](https://openrouter.ai/keys) | `https://openrouter.ai/api/v1` | `openai/gpt-4o-mini` |
+| **✨ Google Gemini** | [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) | `https://generativelanguage.googleapis.com/v1beta/openai` | `gemini-2.5-pro` |
+| **🟢 OpenAI** | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) | `https://api.openai.com/v1` | `gpt-4o-mini` |
 
 ### Step 1: Clone the Repository
+Workshop Short Link: **https://tinyurl.com/netappnasscom**  
+*(Alternative: `https://tinyurl.com/nasscom-kpanel`)*
+
 ```bash
-git clone https://github.com/GouthamKumar-R/multi-agent-k-panel.git
+git clone https://tinyurl.com/netappnasscom
+# Or using full URL:
+# git clone https://github.com/GouthamKumar-R/multi-agent-k-panel.git
 cd multi-agent-k-panel
 ```
 
@@ -122,6 +137,7 @@ multi-agent-k-panel/
 ├── start-in-windows.bat                    # Windows automatic setup script
 ├── start-in-mac.sh                         # macOS automatic setup script
 ├── start-in-linux.sh                       # Linux automatic setup script
+├── LLM_GUIDE.md                            # Comprehensive LLM Key & Provider Guide
 └── README.md                               # Workshop & Repository Guide
 ```
 
@@ -144,4 +160,4 @@ multi-agent-k-panel/
 
 Reach out to any of the session panel members or facilitators (**Aditi Sharma Goyal, Srivatsan Sundaravaradan, Kaushal Srivastava, Goutham Kumar, Vishnu RNS, Shashank Sharma**) during the live session at Taj Yeshwantpur!
 
-Happy learning at **#NasscomFutureForge2026**! 🎉
+Happy hacking at **#NasscomFutureForge2026**! 🎉
