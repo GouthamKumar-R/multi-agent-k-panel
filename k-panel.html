@@ -52,20 +52,23 @@
     z-index: 10;
     min-height: 100vh;
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: center;
-    padding: 2.5rem 1rem;
+    padding: 0;
   }
   .panel {
     position: relative;
     width: 100%;
-    max-width: 48rem;
-    border-radius: 2rem;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.08);
+    max-width: none;
+    min-height: 100vh;
+    border-radius: 0;
+    border: none;
+    border-left: 1px solid rgba(255,255,255,0.06);
+    border-right: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.05);
     backdrop-filter: blur(28px) saturate(220%);
     -webkit-backdrop-filter: blur(28px) saturate(220%);
-    padding: 2.5rem;
+    padding: 3rem clamp(1.25rem, 5vw, 5rem) 3.75rem;
     overflow: hidden;
   }
   .top-actions {
@@ -134,13 +137,58 @@
   .retry-btn { margin-left: 0.5rem; text-decoration: underline; cursor: pointer; color: #c4b5fd; background: none; border: none; font: inherit; }
   .typing { font-style: italic; color: rgba(255,255,255,0.5); }
 
+  .workshop-logos {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    padding: 0.6rem 1rem;
+    flex-wrap: wrap;
+    background: rgba(5,5,10,0.55);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .workshop-logo-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.55rem;
+    padding: 0.35rem 0.75rem;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.15);
+    height: 2.1rem;
+  }
+  .workshop-logo-pill img {
+    height: 1.1rem;
+    width: auto;
+    display: block;
+    opacity: 0.88;
+  }
+  .workshop-logo-pill img.logo-invert {
+    filter: brightness(0) invert(1);
+    height: 1.21rem;
+  }
+  .workshop-logos-sep {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.08em;
+    user-select: none;
+  }
   .watermark {
     text-align: center;
     font-weight: 700;
     font-size: 3rem;
     color: rgba(255,255,255,0.1);
     text-shadow: 0 1px 1px rgba(255,255,255,0.9), 0 -1px 1px rgba(0,0,0,0.5);
-    margin: 2.5rem 0 1.5rem;
+    margin: 0.4rem 0 1.5rem;
   }
 
   textarea, input[type="text"], input[type="password"] {
@@ -164,8 +212,13 @@
     background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8);
     border-radius: 9999px; padding: 0.35rem 0.75rem; font-size: 0.75rem; font-weight: 600;
   }
+  .chip .agent-avatar {
+    width: 1.1rem;
+    height: 1.1rem;
+    font-size: 0.72rem;
+  }
 
-  .center-col { display: flex; flex-direction: column; align-items: center; gap: 1.25rem; padding-top: 1rem; }
+  .center-col { display: flex; flex-direction: column; align-items: center; gap: 1.25rem; padding-top: 1rem; width: 100%; max-width: 42rem; margin: 0 auto; }
 
   .error-text { color: #fb7185; text-align: center; font-size: 0.9rem; }
 
@@ -253,6 +306,12 @@
     width: 2.25rem; height: 2.25rem; border-radius: 9999px;
     background: rgba(139,92,246,0.3); color: #ede9fe;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.1rem;
+    overflow: hidden;
+  }
+  .agent-avatar svg, .msg-avatar svg {
+    width: 100%;
+    height: 100%;
+    display: block;
   }
   .agent-role { font-weight: 600; font-size: 0.9rem; }
   .agent-summary { font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 0.15rem; }
@@ -282,7 +341,7 @@
   .discussion-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
   .topic-pill { background: rgba(255,255,255,0.1); border-radius: 0.5rem; padding: 0.25rem 0.75rem; font-weight: 600; font-size: 0.9rem; }
   .model-tag { font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-left: auto; }
-  .messages { display: flex; flex-direction: column; gap: 1rem; max-height: 55vh; overflow-y: auto; padding-right: 0.25rem; }
+  .messages { display: flex; flex-direction: column; gap: 1rem; max-height: 65vh; overflow-y: auto; padding-right: 0.25rem; }
   .message {
     display: flex; align-items: flex-start; gap: 0.75rem;
     animation: msgIn 0.35s ease both;
@@ -293,6 +352,7 @@
     display: flex; align-items: center; justify-content: center;
     background: rgba(139,92,246,0.3); color: #ede9fe; font-size: 1rem;
     border: 1px solid var(--accent, rgba(139,92,246,0.5));
+    overflow: hidden;
   }
   .msg-avatar.moderator { background: rgba(217,70,239,0.3); color: #fae8ff; }
   .msg-sender { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem; color: rgba(255,255,255,0.8); }
@@ -374,7 +434,7 @@
 
   @media (max-width: 480px) {
     .watermark { font-size: 2rem; }
-    .panel { padding: 1.5rem; border-radius: 1.25rem; }
+    .panel { padding: 5.5rem 1.25rem 1.5rem; border-radius: 0; }
     .visualize-modal { width: 100vw; height: 100vh; border-radius: 0; }
   }
 </style>
@@ -446,7 +506,7 @@
     </div>
 
     <!-- Discussion screen -->
-    <div id="discussion-screen" style="display:none; padding-top: 1.5rem;">
+    <div id="discussion-screen" style="display:none; padding-top: 1.5rem; width: 100%; max-width: 56rem; margin: 0 auto;">
       <div class="discussion-header">
         <span style="font-size:0.9rem; font-weight:600; color: rgba(255,255,255,0.5);">Topic</span>
         <span class="topic-pill" id="topic-pill"></span>
@@ -600,6 +660,11 @@
       This is a teaching example, not a production system &mdash; your API key
       is sent directly from the browser to the backend on every request.
     </p>
+    <p class="hint" style="margin-top: 0.9rem; margin-bottom: 0;">
+      Useful links: <a href="https://tinyurl.com/netappnasscom" target="_blank" style="color:#c4b5fd;">NetApp NASSCOM</a> ·
+      <a href="https://tinyurl.com/nasscom-kpanel" target="_blank" style="color:#c4b5fd;">K-Panel</a> ·
+      <a href="https://tinyurl.com/futureforge-kpanel" target="_blank" style="color:#c4b5fd;">FutureForge K-Panel</a>
+    </p>
     <div class="modal-actions">
       <button class="glass-btn violet" id="about-close-btn">Got it</button>
     </div>
@@ -676,6 +741,141 @@
 </div>
 
 <script>
+(function (global) {
+  "use strict";
+
+  const BACKDROP_STYLES = [
+    {
+      bg: "linear-gradient(145deg, rgba(16,30,60,0.96), rgba(30,48,96,0.82))",
+      border: "rgba(140,171,255,0.55)",
+      tie: "#5fa2ff",
+      shirt: "#e8efff"
+    },
+    {
+      bg: "linear-gradient(145deg, rgba(25,32,44,0.96), rgba(56,66,84,0.82))",
+      border: "rgba(168,184,212,0.5)",
+      tie: "#7bc8e8",
+      shirt: "#f3f7ff"
+    },
+    {
+      bg: "linear-gradient(145deg, rgba(18,43,46,0.96), rgba(40,89,96,0.82))",
+      border: "rgba(126,220,210,0.52)",
+      tie: "#4ed1bc",
+      shirt: "#eafffa"
+    },
+    {
+      bg: "linear-gradient(145deg, rgba(54,28,42,0.96), rgba(96,52,78,0.82))",
+      border: "rgba(236,163,196,0.52)",
+      tie: "#ff8fb3",
+      shirt: "#fff2f8"
+    },
+    {
+      bg: "linear-gradient(145deg, rgba(41,29,18,0.96), rgba(96,64,39,0.82))",
+      border: "rgba(233,186,125,0.52)",
+      tie: "#f7a84f",
+      shirt: "#fff6ea"
+    }
+  ];
+
+  const PERSONA_TEMPLATES = [
+    { hair: "#2c1b10", suit: "#1d2840", accent: "#4f84ff" },
+    { hair: "#1f2937", suit: "#2b3448", accent: "#48a0cc" },
+    { hair: "#5f4630", suit: "#2f3d2d", accent: "#58b68e" },
+    { hair: "#161616", suit: "#3a2f4f", accent: "#9d79d7" },
+    { hair: "#4a2f2a", suit: "#3f3630", accent: "#d18f5a" },
+    { hair: "#3f3f3f", suit: "#25344f", accent: "#6ca5f1" },
+    { hair: "#2a2320", suit: "#334035", accent: "#69bb9e" },
+    { hair: "#2a1f33", suit: "#3f2f3a", accent: "#ca7ca7" }
+  ];
+
+  const SKIN_TONES = ["#f7d9c1", "#edc4a4", "#d8a982", "#bf8f69", "#a77753", "#8f6243"];
+
+  function hashString(input) {
+    const str = String(input || "unknown");
+    let hash = 2166136261;
+    for (let i = 0; i < str.length; i++) {
+      hash ^= str.charCodeAt(i);
+      hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+    }
+    return hash >>> 0;
+  }
+
+  function normalizeAgent(agentOrId) {
+    if (!agentOrId) return { id: "unknown", name: "Unknown", role: "Unknown" };
+    if (typeof agentOrId === "string") {
+      return { id: agentOrId, name: agentOrId, role: agentOrId };
+    }
+    return {
+      id: agentOrId.id || agentOrId.name || "unknown",
+      name: agentOrId.name || agentOrId.id || "Unknown",
+      role: agentOrId.role || agentOrId.name || agentOrId.id || "Unknown"
+    };
+  }
+
+  function initials(agent) {
+    const parts = `${agent.name || agent.role || "Agent"}`
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2);
+    if (!parts.length) return "AG";
+    return parts.map((p) => p[0].toUpperCase()).join("");
+  }
+
+  function createAvatar(agentOrId) {
+    const agent = normalizeAgent(agentOrId);
+    const hash = hashString(`${agent.id}:${agent.role}:${agent.name}`);
+    const style = BACKDROP_STYLES[hash % BACKDROP_STYLES.length];
+    const persona = PERSONA_TEMPLATES[(hash >>> 3) % PERSONA_TEMPLATES.length];
+    const skin = SKIN_TONES[(hash >>> 6) % SKIN_TONES.length];
+    return {
+      bg: style.bg,
+      border: style.border,
+      tie: style.tie,
+      shirt: style.shirt,
+      suit: persona.suit,
+      hair: persona.hair,
+      skin,
+      accent: persona.accent,
+      initials: initials(agent),
+      title: `${agent.role} persona`
+    };
+  }
+
+  function escapeHtml(text) {
+    return String(text || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\"/g, "&quot;");
+  }
+
+  function renderPersonaSvg(avatar) {
+    const svg = [
+      '<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">',
+      `<defs><linearGradient id="avatarBg" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="${avatar.accent}" stop-opacity="0.15"/><stop offset="100%" stop-color="#ffffff" stop-opacity="0.02"/></linearGradient></defs>`,
+      '<rect x="0" y="0" width="64" height="64" rx="32" fill="url(#avatarBg)"/>',
+      `<circle cx="32" cy="23" r="11" fill="${avatar.skin}"/>`,
+      `<path d="M21 22 C22 13, 42 13, 43 22 C40 16, 24 16, 21 22 Z" fill="${avatar.hair}"/>`,
+      `<path d="M17 54 C18 42, 25 36, 32 36 C39 36, 46 42, 47 54 Z" fill="${avatar.suit}"/>`,
+      `<path d="M26 39 L32 47 L38 39 Z" fill="${avatar.shirt}"/>`,
+      `<path d="M30.7 46 L33.3 46 L34.2 54 L29.8 54 Z" fill="${avatar.tie}"/>`,
+      `<text x="32" y="60" text-anchor="middle" font-size="7" font-family="system-ui, -apple-system, Segoe UI, sans-serif" fill="${avatar.shirt}" fill-opacity="0.9">${escapeHtml(avatar.initials)}</text>`,
+      "</svg>"
+    ].join("");
+    return svg;
+  }
+
+  function render(agentOrId, className) {
+    const avatar = createAvatar(agentOrId);
+    return `<span class="${className}" style="background:${avatar.bg};border:1px solid ${avatar.border};" title="${escapeHtml(avatar.title)}">${renderPersonaSvg(avatar)}</span>`;
+  }
+
+  global.AgentAvatarLibrary = {
+    createAvatar,
+    render
+  };
+})(window);
+
 (function () {
   "use strict";
 
@@ -685,6 +885,7 @@
   const STORAGE_BASE_URL = "k_panel_llm_base_url";
   const STORAGE_MODEL = "k_panel_llm_model";
   const STORAGE_USER = "k_panel_llm_user";
+  const ORCHESTRATION_TURN_DELAY_MS = 450;
 
   // ---- LocalStorage helpers (compatible with the Next.js app) ----
   function getLlmToken() { return localStorage.getItem(STORAGE_TOKEN) || ""; }
@@ -712,7 +913,12 @@
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
-  const AVATAR_ICON = '<svg width="14" height="14" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.5 0.875C5.49797 0.875 3.875 2.49797 3.875 4.5C3.875 6.15288 4.98124 7.54738 6.49373 7.98351C3.41855 8.40901 1.05 11.0104 1.05 14.1667C1.05 14.4658 1.29079 14.7083 1.5875 14.7083H13.4125C13.7092 14.7083 13.95 14.4658 13.95 14.1667C13.95 11.0104 11.5814 8.40901 8.50627 7.98351C10.0188 7.54738 11.125 6.15288 11.125 4.5C11.125 2.49797 9.50203 0.875 7.5 0.875Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/></svg>';
+  function renderAgentAvatar(agentOrId, className) {
+    if (window.AgentAvatarLibrary && typeof window.AgentAvatarLibrary.render === "function") {
+      return window.AgentAvatarLibrary.render(agentOrId, className);
+    }
+    return `<span class="${className}">🤖</span>`;
+  }
 
   const AGENT_ACCENTS = ["#a78bfa", "#38bdf8", "#f472b6", "#34d399", "#fbbf24", "#fb7185", "#818cf8", "#2dd4bf"];
   function accentFor(key) {
@@ -774,6 +980,9 @@
   let prd = null;
   let status = "idle";
   let discussionStarted = false;
+  let agentsLoadInProgress = false;
+  let agentsLoadedOnce = false;
+  let agentsLoadFailed = false;
 
   // ---- DOM refs ----
   const startScreen = document.getElementById("start-screen");
@@ -905,20 +1114,72 @@
   });
 
   // ---- Load agents ----
-  agentList.innerHTML = '<div style="padding:1.5rem 0; text-align:center; font-size:0.85rem; color:rgba(255,255,255,0.4);">Loading experts…</div>';
-  fetch(API_BASE + "/agents")
-    .then((r) => r.json())
-    .then((data) => { agents = data.agents || []; renderSelectedChips(); })
-    .catch(() => {
-      agentList.innerHTML = '<div style="padding:1.5rem 0; text-align:center; font-size:0.85rem; color:#fb7185;">Could not reach the backend. Is it running?</div>';
-    });
+  function showAgentsLoadingState(msg) {
+    agentList.innerHTML = `<div style="padding:1.5rem 0; text-align:center; font-size:0.85rem; color:rgba(255,255,255,0.5);">${escapeHtml(msg)}</div>`;
+  }
+
+  function showAgentsErrorState(msg) {
+    agentList.innerHTML = `
+      <div style="padding:1.5rem 0; text-align:center; font-size:0.85rem; color:#fb7185;">
+        ${escapeHtml(msg)}
+        <div style="margin-top:0.75rem;">
+          <button type="button" class="glass-btn" id="retry-load-agents">Retry</button>
+        </div>
+      </div>`;
+    const retryBtn = document.getElementById("retry-load-agents");
+    if (retryBtn) retryBtn.addEventListener("click", () => loadAgents({ maxAttempts: 8, delayMs: 900, forceReload: true }));
+  }
+
+  async function loadAgents(opts) {
+    const options = opts || {};
+    const maxAttempts = options.maxAttempts || 1;
+    const delayMs = options.delayMs || 1000;
+    const forceReload = !!options.forceReload;
+
+    if (agentsLoadInProgress) return;
+    if (!forceReload && agentsLoadedOnce && agents.length > 0) return;
+
+    agentsLoadInProgress = true;
+    agentsLoadFailed = false;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      showAgentsLoadingState(
+        attempt === 1
+          ? "Loading experts…"
+          : `Backend is starting… retrying (${attempt}/${maxAttempts})`
+      );
+      try {
+        const res = await fetch(API_BASE + "/agents");
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        agents = data.agents || [];
+        agentsLoadedOnce = true;
+        agentsLoadFailed = false;
+        renderSelectedChips();
+        if (agentModal.classList.contains("open")) renderAgentList();
+        agentsLoadInProgress = false;
+        return;
+      } catch (e) {
+        if (attempt < maxAttempts) {
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+          continue;
+        }
+        agentsLoadFailed = true;
+        showAgentsErrorState("Could not reach the backend yet.");
+      }
+    }
+
+    agentsLoadInProgress = false;
+  }
+
+  loadAgents({ maxAttempts: 10, delayMs: 900 });
 
   function renderSelectedChips() {
     selectedChips.innerHTML = selected
       .map((id) => {
         const a = agents.find((x) => x.id === id);
         if (!a) return "";
-        return `<span class="chip" data-id="${id}" title="Click to remove" style="cursor:pointer;">${AVATAR_ICON} ${escapeHtml(a.role)}</span>`;
+        return `<span class="chip" data-id="${id}" title="Click to remove" style="cursor:pointer;">${renderAgentAvatar(a, "agent-avatar")} ${escapeHtml(a.role)}</span>`;
       })
       .join("");
     selectedChips.querySelectorAll(".chip").forEach((chip) => {
@@ -931,6 +1192,14 @@
   }
 
   function renderAgentList() {
+    if (agentsLoadInProgress) {
+      showAgentsLoadingState("Loading experts…");
+      return;
+    }
+    if (!agents.length && agentsLoadFailed) {
+      showAgentsErrorState("Could not reach the backend yet.");
+      return;
+    }
     const q = agentSearch.value.toLowerCase();
     const filtered = agents.filter(
       (a) => a.role.toLowerCase().includes(q) || a.name.toLowerCase().includes(q)
@@ -944,7 +1213,7 @@
         const isSelected = selected.includes(a.id);
         return `
           <button type="button" class="agent-card ${isSelected ? "selected" : ""}" data-id="${a.id}">
-            <span class="agent-avatar">${AVATAR_ICON}</span>
+            ${renderAgentAvatar(a, "agent-avatar")}
             <span>
               <div class="agent-role">${escapeHtml(a.role)}</div>
               <div class="agent-summary">${escapeHtml(a.summary || "")}</div>
@@ -965,7 +1234,13 @@
     });
   }
 
-  btnAgents.addEventListener("click", () => { renderAgentList(); openModal(agentModal); });
+  btnAgents.addEventListener("click", () => {
+    if (!agents.length && (agentsLoadFailed || !agentsLoadedOnce)) {
+      loadAgents({ maxAttempts: 6, delayMs: 900, forceReload: true });
+    }
+    renderAgentList();
+    openModal(agentModal);
+  });
   agentModalClose.addEventListener("click", () => closeModal(agentModal));
   agentModalDone.addEventListener("click", () => closeModal(agentModal));
   agentSearch.addEventListener("input", renderAgentList);
@@ -1061,11 +1336,20 @@
   // ---- Provider help ----
   const PROVIDERS = [
     {
-      name: "GroqCloud",
-      avatar: "⚡",
-      baseUrl: "https://api.groq.com/openai/v1",
-      model: "llama-3.3-70b-versatile",
-      keyHint: "Free/low-latency inference. Get key from <a href='https://console.groq.com/keys' target='_blank' style='color:#c4b5fd;text-decoration:underline;'>console.groq.com/keys</a>.",
+      name: "OpenAI",
+      avatar: "🟢",
+      baseUrl: "https://api.openai.com/v1",
+      model: "gpt-5.2",
+      keyHint: "Create a key at platform.openai.com/api-keys (starts with sk-...).",
+      keyUrl: "https://platform.openai.com/api-keys",
+      user: "",
+    },
+    {
+      name: "Azure OpenAI",
+      avatar: "🔷",
+      baseUrl: "https://<your-resource>.openai.azure.com/openai/deployments/<deployment>",
+      model: "<your-deployment-name>",
+      keyHint: "Use your Azure resource's API key. Model field = your deployment name, not the base model.",
       user: "",
     },
     {
@@ -1073,23 +1357,49 @@
       avatar: "🌐",
       baseUrl: "https://openrouter.ai/api/v1",
       model: "openai/gpt-4o-mini",
-      keyHint: "Access 100+ models. Get free key from <a href='https://openrouter.ai/keys' target='_blank' style='color:#c4b5fd;text-decoration:underline;'>openrouter.ai/keys</a>.",
+      keyHint: "Key from openrouter.ai/keys (sk-or-v1-...). Model uses provider/model-name format.",
       user: "",
     },
     {
       name: "Google Gemini",
       avatar: "✨",
       baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
-      model: "gemini-2.5-pro",
-      keyHint: "Get key from <a href='https://aistudio.google.com/app/apikey' target='_blank' style='color:#c4b5fd;text-decoration:underline;'>aistudio.google.com/app/apikey</a>. Uses Gemini OpenAI-compatibility endpoint.",
+      model: "gemini-flash-latest",
+      keyHint: "Get a key at aistudio.google.com/apikey. Uses Gemini's official OpenAI-compatibility endpoint (beta).",
       user: "",
     },
     {
-      name: "OpenAI",
-      avatar: "🟢",
-      baseUrl: "https://api.openai.com/v1",
-      model: "gpt-4o-mini",
-      keyHint: "Get key from <a href='https://platform.openai.com/api-keys' target='_blank' style='color:#c4b5fd;text-decoration:underline;'>platform.openai.com/api-keys</a> (starts with sk-proj-...). Requires active billing credit.",
+      name: "Anthropic Claude",
+      avatar: "🟣",
+      baseUrl: "https://api.anthropic.com/v1",
+      model: "claude-sonnet-4-5",
+      keyHint: "Key from console.anthropic.com. Native API differs slightly; use a compatible proxy (e.g. LiteLLM) if calls fail.",
+      user: "",
+    },
+    {
+      name: "Groq",
+      avatar: "⚡",
+      baseUrl: "https://api.groq.com/openai/v1",
+      model: "llama-3.3-70b-versatile",
+      keyHint: "Free/low-latency inference. Key from console.groq.com/keys.",
+      keyUrl: "https://console.groq.com/keys",
+      docsUrl: "https://console.groq.com/docs/overview",
+      user: "",
+    },
+    {
+      name: "Together AI",
+      avatar: "🤝",
+      baseUrl: "https://api.together.ai/v1",
+      model: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+      keyHint: "Key from api.together.ai/settings/projects/~current/api-keys. Model IDs are namespaced like provider/model-name.",
+      user: "",
+    },
+    {
+      name: "Mistral AI",
+      avatar: "🌬️",
+      baseUrl: "https://api.mistral.ai/v1",
+      model: "mistral-large-latest",
+      keyHint: "Key from console.mistral.ai/api-keys.",
       user: "",
     },
     {
@@ -1097,7 +1407,15 @@
       avatar: "🐋",
       baseUrl: "https://api.deepseek.com/v1",
       model: "deepseek-chat",
-      keyHint: "Get key from <a href='https://platform.deepseek.com/api_keys' target='_blank' style='color:#c4b5fd;text-decoration:underline;'>platform.deepseek.com/api_keys</a>.",
+      keyHint: "Key from platform.deepseek.com/api_keys.",
+      user: "",
+    },
+    {
+      name: "xAI Grok",
+      avatar: "🚀",
+      baseUrl: "https://api.x.ai/v1",
+      model: "grok-4",
+      keyHint: "Key from console.x.ai.",
       user: "",
     },
     {
@@ -1105,7 +1423,7 @@
       avatar: "🦙",
       baseUrl: "http://localhost:11434/v1",
       model: "llama3.3",
-      keyHint: "100% Free & Offline. No key needed (enter 'ollama'). Run `ollama run llama3.3` locally.",
+      keyHint: "No real key needed \u2014 type anything (e.g. \"ollama\"). Run `ollama serve` locally first.",
       user: "",
     },
     {
@@ -1113,7 +1431,7 @@
       avatar: "💻",
       baseUrl: "http://localhost:1234/v1",
       model: "<model loaded in LM Studio>",
-      keyHint: "100% Free & Offline. No key needed. Start server from LM Studio Developer tab.",
+      keyHint: "No real key needed \u2014 type anything. Start the local server from LM Studio's Developer tab.",
       user: "",
     },
   ];
@@ -1133,6 +1451,7 @@
         <div class="provider-field"><b>Base URL:</b> <code>${escapeHtml(p.baseUrl)}</code></div>
         <div class="provider-field"><b>Model:</b> <code>${escapeHtml(p.model)}</code></div>
         <div class="provider-hint">${escapeHtml(p.keyHint)}</div>
+        ${(p.keyUrl || p.docsUrl) ? `<div class="provider-hint">${p.keyUrl ? `<a href="${escapeHtml(p.keyUrl)}" target="_blank" style="color:#c4b5fd;">API keys</a>` : ""}${(p.keyUrl && p.docsUrl) ? " · " : ""}${p.docsUrl ? `<a href="${escapeHtml(p.docsUrl)}" target="_blank" style="color:#c4b5fd;">Docs</a>` : ""}</div>` : ""}
         <button type="button" class="glass-btn violet use-provider-btn provider-use-btn" data-idx="${i}">Use these</button>
       </div>
     `).join("");
@@ -1281,6 +1600,7 @@
         renderMessages();
         return;
       }
+      await new Promise((resolve) => setTimeout(resolve, ORCHESTRATION_TURN_DELAY_MS));
       await runOrchestrationChain(history);
     } catch (e) {
       if (discussionAborted) return;
@@ -1309,7 +1629,7 @@
         const accent = accentFor(msg.sender);
         return `
           <div class="message" style="--accent:${accent};">
-            <span class="msg-avatar">${AVATAR_ICON}</span>
+            ${renderAgentAvatar(agent || msg.sender, "msg-avatar")}
             <div style="min-width:0;">
               <div class="msg-sender">${escapeHtml(label)}</div>
               <div class="msg-bubble">${renderMarkdown(msg.text || "")}</div>
@@ -1320,7 +1640,7 @@
     if (showTyping) {
       messagesEl.insertAdjacentHTML("beforeend", `
         <div class="message">
-          <span class="msg-avatar">${AVATAR_ICON}</span>
+          ${renderAgentAvatar("typing_indicator", "msg-avatar")}
           <div class="msg-bubble typing">An expert is responding\u2026</div>
         </div>`);
     }
@@ -1397,20 +1717,6 @@
     visualizeDownload.style.display = "inline-flex";
   }
 
-  function extractHtml(raw) {
-    if (!raw) return "";
-    let text = raw.trim();
-    const match = text.match(/```(?:html)?\s*([\s\S]*?)(?:```|$)/i);
-    if (match && match[1]) {
-      text = match[1].trim();
-    }
-    // Auto-repair truncated HTML if LLM hit output token limit
-    if (!text.toLowerCase().includes("</html>")) {
-      text += "\n</div></div></body></html>";
-    }
-    return text;
-  }
-
   function showVisualizeError(msg) {
     stopLoadingStepRotation();
     visualizeLoading.style.display = "none";
@@ -1463,55 +1769,65 @@
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let fullText = "";
-      let buffer = "";
+      let eventBuffer = "";
+
+      function processSseEvents(isFinal) {
+        const normalized = eventBuffer.replace(/\r\n/g, "\n");
+        const frames = normalized.split("\n\n");
+        if (!isFinal) {
+          eventBuffer = frames.pop() || "";
+        } else {
+          eventBuffer = "";
+        }
+
+        for (const frame of frames) {
+          if (!frame.trim()) continue;
+          const dataLines = frame
+            .split("\n")
+            .filter((line) => line.startsWith("data: "))
+            .map((line) => line.slice(6).trim());
+          if (!dataLines.length) continue;
+          const chunk = dataLines.join("\n");
+          if (!chunk || chunk === "[DONE]") continue;
+
+          let parsed = null;
+          try {
+            parsed = JSON.parse(chunk);
+          } catch (parseErr) {
+            // Ignore malformed/incomplete non-JSON events rather than polluting HTML output.
+            continue;
+          }
+
+          if (parsed && parsed.error) {
+            throw new Error(parsed.error);
+          }
+
+          const delta =
+            (parsed.choices && parsed.choices[0] && (
+              (parsed.choices[0].delta && parsed.choices[0].delta.content) ||
+              (parsed.choices[0].message && parsed.choices[0].message.content) ||
+              parsed.choices[0].content
+            )) || "";
+
+          if (typeof delta === "string" && delta) {
+            fullText += delta;
+          }
+        }
+      }
+
       let done = false;
       while (!done) {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
         if (value) {
-          buffer += decoder.decode(value, { stream: !done });
-          const parts = buffer.split("\n");
-          buffer = parts.pop() || "";
-          for (let rawLine of parts) {
-            const line = rawLine.trim();
-            if (!line.startsWith("data:")) continue;
-            const payloadStr = line.replace(/^data:\s*/, "").trim();
-            if (!payloadStr || payloadStr === "[DONE]") continue;
-            try {
-              const parsed = JSON.parse(payloadStr);
-              const delta =
-                (parsed.choices && parsed.choices[0] && (
-                  (parsed.choices[0].delta && parsed.choices[0].delta.content) ||
-                  (parsed.choices[0].message && parsed.choices[0].message.content) ||
-                  parsed.choices[0].text ||
-                  (typeof parsed.choices[0] === "string" ? parsed.choices[0] : "")
-                )) || "";
-              if (delta) {
-                fullText += delta;
-                appendCodeStream(fullText);
-              }
-            } catch (err) {
-              // Ignore incomplete JSON chunks until buffer completes
-            }
-          }
+          eventBuffer += decoder.decode(value, { stream: true });
+          processSseEvents(false);
+          appendCodeStream(fullText);
         }
       }
-
-      // Flush any remaining buffer line
-      if (buffer.trim().startsWith("data:")) {
-        const payloadStr = buffer.trim().replace(/^data:\s*/, "").trim();
-        if (payloadStr && payloadStr !== "[DONE]") {
-          try {
-            const parsed = JSON.parse(payloadStr);
-            const delta =
-              (parsed.choices && parsed.choices[0] && (
-                (parsed.choices[0].delta && parsed.choices[0].delta.content) ||
-                (parsed.choices[0].message && parsed.choices[0].message.content)
-              )) || "";
-            if (delta) fullText += delta;
-          } catch (e) {}
-        }
-      }
+      eventBuffer += decoder.decode();
+      processSseEvents(true);
+      appendCodeStream(fullText);
 
       if (!fullText.trim()) {
         showVisualizeError("No preview was generated.");
@@ -1520,11 +1836,25 @@
         showVisualizeResult(visualizeHtmlResult);
       }
     } catch (e) {
-      console.error("[Visualize Error]", e);
-      showVisualizeError("Failed to generate the preview: " + (e.message || e));
+      console.error("Visualization stream failed:", e);
+      const msg = (e && e.message) ? e.message : "Failed to generate the preview.";
+      showVisualizeError(msg);
     }
   }
 })();
 </script>
+
+<!-- Fixed workshop footer -->
+<div class="workshop-logos">
+  <div class="workshop-logo-pill">
+    <img src="static/logos/netapp_logo.png" alt="NetApp" class="logo-invert" />
+  </div>
+  <span class="workshop-logos-sep">&times;</span>
+  <div class="workshop-logo-pill" style="gap: 0.55rem;">
+    <img src="static/logos/nasscom_white_logo.png" alt="NASSCOM" />
+    <span style="color:rgba(255,255,255,0.35); font-weight:700;">|</span>
+    <span style="color:rgba(255,255,255,0.82);font-size:0.72rem;font-weight:700;letter-spacing:0.12em;white-space:nowrap;">DEEPTECH 2026</span>
+  </div>
+</div>
 </body>
 </html>

@@ -24,13 +24,29 @@ Welcome to the **K-Panel** hands-on multi-agent workshop! This repository serves
 
 ## 💡 What is K-Panel?
 
-**K-Panel** is a lightweight, hand-rolled **multi-agent orchestration framework** designed specifically as a teaching tool. It reveals the exact mechanics that production frameworks (such as LangGraph, CrewAI, AutoGen, or OpenAI Swarm) abstract away:
+**K-Panel** is a multi-agent collaboration platform for turning a single prompt into a structured product direction and a working web prototype.
 
-1. **Agent Personas Registry**: Declarative YAML configuration files (`agents/*.yaml`) defining expert system prompts, roles, and metadata with runtime hot-reloading.
-2. **Model Client & Observability**: Thin HTTP wrapper around OpenAI-compatible APIs (`/v1/chat/completions`) with real-time terminal tracing (`print_llm_log`).
-3. **Stateless Orchestration Loop**: Round-robin turn taking (`/orchestrate`) across selected agents, culminating in automated PRD (Product Requirements Document) synthesis.
-4. **Single-Agent 1-on-1 Chat**: Direct interaction with specific agent personas with Server-Sent Events (SSE) streaming (`/chat`).
-5. **Downstream Pipeline Synthesis**: Transforming multi-agent discussion PRDs into fully functional, self-contained single-page web prototypes streamed live (`/visualize/stream`).
+At runtime, K-Panel lets you assemble a panel of AI specialists (brand, design, content, growth, analytics, and custom roles), orchestrates their discussion turn-by-turn, and converts their consensus into production-style artifacts.
+
+### What K-Panel does end-to-end
+
+1. **Persona-Driven Agent Collaboration**
+  Loads agent personas from YAML (`agents/*.yaml`) including role, system prompt, expertise, and metadata. New personas can be added from the UI and become available immediately.
+
+2. **Provider-Agnostic LLM Execution**
+  Connects to OpenAI-compatible providers (OpenAI, Groq, OpenRouter, Gemini-compatible endpoint, Ollama/local proxies) via `/v1/chat/completions` with configurable base URL, model, and user identifier.
+
+3. **Stateless Multi-Agent Orchestration**
+  Runs a deterministic orchestration loop (`/orchestrate`) where selected experts contribute in sequence, preserving full history and producing traceable decision flow.
+
+4. **Automatic PRD Synthesis**
+  After all agents contribute, K-Panel synthesizes a structured Markdown PRD capturing audience, value proposition, messaging, visual direction, features, risks, and next steps.
+
+5. **Live Prototype Generation from PRD**
+  Uses the PRD as the source brief for `/visualize/stream`, generating a complete single-page HTML prototype with streaming output and downloadable artifact output.
+
+6. **Operational Reliability for Workshops & Demos**
+  Includes startup readiness checks, retry/backoff handling for provider rate limits, and robust SSE parsing so long-form generations remain stable across providers.
 
 ---
 
@@ -95,13 +111,13 @@ During this workshop, participants will progress through three main exercises:
 ### Activity 1: Run a Multi-Agent Panel Discussion
 1. Open `http://127.0.0.1:8080/k-panel.html`.
 2. Configure your **API Base URL**, **Model Name**, and **API Key** in the settings drawer.
-3. Select 3-4 agent experts (e.g. Brand Manager, Copywriter, Graphic Designer, Marketing Analyst).
+3. Select 2-3 agent experts (e.g. Brand Manager, Copywriter, or Graphic Designer).
 4. Enter a discussion topic (e.g., *"Building an Enterprise AI Security Gateway for Autonomous Robotics"*).
 5. Step through the discussion turn-by-turn to watch the agents debate and contribute.
 6. Observe how the final turn automatically synthesizes the discussion into a Markdown PRD.
 
 ### Activity 2: Create Custom Deeptech Agents
-1. Click **+ Add Agent** in the UI (or create a new `.yaml` file under `agents/`).
+1. Click **New Agent** in the UI (or create a new `.yaml` file under `agents/`).
 2. Add custom Deeptech roles relevant to Nasscom Future Forge:
    - **Identity Infrastructure Lead**
    - **Autonomous Robotics Architect**
@@ -130,6 +146,11 @@ multi-agent-k-panel/
 │   ├── marketing_analyst.yaml
 │   ├── social_media_manager.yaml
 │   └── video_producer_editor.yaml
+├── docs/
+│   ├── assets/                             # Portable NetApp and Nasscom logos
+│   └── KPANEL_SETUP_EXECUTIVE.html         # Interactive five-step participant guide
+├── static/
+│   └── logos/                              # Branding used by the K-Panel UI
 ├── k-panel.py                              # FastAPI Backend (Orchestrator & Model Client)
 ├── k-panel.html                            # Glassmorphism Frontend Web UI
 ├── requirements.txt                        # Python dependencies (fastapi, uvicorn, requests, httpx, pyyaml)
