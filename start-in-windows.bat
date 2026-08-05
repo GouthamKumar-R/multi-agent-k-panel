@@ -69,11 +69,52 @@ taskkill /FI "WINDOWTITLE eq K-Panel Backend*" /T /F >nul 2>nul
 echo [run] Starting backend on http://127.0.0.1:%BACKEND_PORT% ...
 start "K-Panel Backend" /min cmd /c "venv\Scripts\python.exe k-panel.py"
 
-REM --- Step 5: serve the static HTML page and open it in the browser ---
+REM --- Step 5: wait for backend readiness before launching the frontend ---
+echo [wait] Waiting for backend readiness on /agents ...
+set READY=0
+for /L %%i in (1,1,45) do (
+    call venv\Scripts\python.exe -c "import socket,urllib.request,sys;socket.setdefaulttimeout(1.5);sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:%BACKEND_PORT%/agents').status==200 else 1)"
+    if not errorlevel 1 (
+        set READY=1
+        goto :backend_ready
+    )
+    timeout /t 1 /nobreak >nul
+)
+
+:backend_ready
+if "%READY%"=="0" (
+    echo [error] Backend did not become ready in time.
+    echo [error] Check backend.log for startup errors.
+    taskkill /FI "WINDOWTITLE eq K-Panel Backend*" /T /F >nul 2>nul
+    pause
+    exit /b 1
+)
+
+REM --- Step 6: serve the static HTML page and open it in the browser ---
 echo [run] Serving k-panel.html on http://127.0.0.1:%STATIC_PORT% ...
 start "K-Panel Static Server" /min cmd /c "venv\Scripts\python.exe -m http.server %STATIC_PORT% --directory ."
 
-timeout /t 2 /nobreak >nul
+echo [wait] Waiting for frontend readiness on /k-panel.html ...
+set FRONTEND_READY=0
+for /L %%i in (1,1,20) do (
+    call venv\Scripts\python.exe -c "import socket,urllib.request,sys;socket.setdefaulttimeout(1.5);sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:%STATIC_PORT%/k-panel.html').status==200 else 1)"
+    if not errorlevel 1 (
+        set FRONTEND_READY=1
+        goto :frontend_ready
+    )
+    timeout /t 1 /nobreak >nul
+)
+
+:frontend_ready
+if "%FRONTEND_READY%"=="0" (
+    echo [error] Frontend server did not become ready in time.
+    echo [error] Check static.log for startup errors.
+    taskkill /FI "WINDOWTITLE eq K-Panel Backend*" /T /F >nul 2>nul
+    taskkill /FI "WINDOWTITLE eq K-Panel Static Server*" /T /F >nul 2>nul
+    pause
+    exit /b 1
+)
+
 start "" "http://127.0.0.1:%STATIC_PORT%/k-panel.html"
 
 echo.

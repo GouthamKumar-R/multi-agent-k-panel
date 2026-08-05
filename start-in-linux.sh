@@ -83,13 +83,63 @@ echo "[run] Starting backend on http://127.0.0.1:$BACKEND_PORT ..."
 BACKEND_PID=$!
 echo "$BACKEND_PID" > "$DIR/.backend.pid"
 
-# --- Step 5: serve the static HTML page and open it in the browser ---
+# --- Step 5: wait for backend readiness before launching the frontend ---
+echo "[wait] Waiting for backend readiness on /agents ..."
+BACKEND_READY=0
+for i in $(seq 1 45); do
+    if "$DIR/venv/bin/python" - <<PY >/dev/null 2>&1
+import urllib.request
+try:
+    with urllib.request.urlopen("http://127.0.0.1:${BACKEND_PORT}/agents", timeout=1.5) as r:
+        raise SystemExit(0 if r.status == 200 else 1)
+except Exception:
+    raise SystemExit(1)
+PY
+    then
+        BACKEND_READY=1
+        break
+    fi
+    sleep 1
+done
+
+if [ "$BACKEND_READY" -ne 1 ]; then
+    echo "[error] Backend did not become ready in time."
+    echo "[error] Check $DIR/backend.log for startup errors."
+    kill "$BACKEND_PID" 2>/dev/null || true
+    exit 1
+fi
+
+# --- Step 6: serve the static HTML page and open it in the browser ---
 echo "[run] Serving k-panel.html on http://127.0.0.1:$STATIC_PORT ..."
 "$DIR/venv/bin/python" -m http.server $STATIC_PORT --directory "$DIR" > "$DIR/static.log" 2>&1 &
 STATIC_PID=$!
 echo "$STATIC_PID" > "$DIR/.static.pid"
 
-sleep 2
+echo "[wait] Waiting for frontend readiness on /k-panel.html ..."
+FRONTEND_READY=0
+for i in $(seq 1 20); do
+    if "$DIR/venv/bin/python" - <<PY >/dev/null 2>&1
+import urllib.request
+try:
+    with urllib.request.urlopen("http://127.0.0.1:${STATIC_PORT}/k-panel.html", timeout=1.5) as r:
+        raise SystemExit(0 if r.status == 200 else 1)
+except Exception:
+    raise SystemExit(1)
+PY
+    then
+        FRONTEND_READY=1
+        break
+    fi
+    sleep 1
+done
+
+if [ "$FRONTEND_READY" -ne 1 ]; then
+    echo "[error] Frontend server did not become ready in time."
+    echo "[error] Check $DIR/static.log for startup errors."
+    kill "$BACKEND_PID" "$STATIC_PID" 2>/dev/null || true
+    exit 1
+fi
+
 URL="http://127.0.0.1:$STATIC_PORT/k-panel.html"
 if command -v xdg-open >/dev/null 2>&1; then
     xdg-open "$URL" >/dev/null 2>&1 || true
