@@ -1,6 +1,6 @@
 # K-Panel: Multi-Agent AI Workshop — Nasscom Future Forge 2026
 
-Welcome to the **K-Panel** hands-on multi-agent workshop boilerplate! This repository serves as the official interactive environment and code foundation for our multi-agent workshop session at **Nasscom Future Forge 2026**.
+Welcome to the **K-Panel** hands-on multi-agent workshop! This repository serves as the official interactive environment and code foundation for our multi-agent workshop session at **Nasscom Future Forge 2026**.
 
 ---
 
