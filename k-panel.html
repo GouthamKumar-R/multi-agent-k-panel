@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>K-Panel (Static)</title>
+<style>
+  :root {
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #f1f5f9;
+    background: #05050a;
+    overflow-x: hidden;
+    position: relative;
+  }
+  .bg-gradient {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 15% 15%, rgba(139,92,246,0.28), transparent 42%),
+      radial-gradient(circle at 85% 10%, rgba(56,189,248,0.22), transparent 42%),
+      radial-gradient(circle at 15% 90%, rgba(236,72,153,0.22), transparent 45%),
+      radial-gradient(circle at 85% 90%, rgba(16,185,129,0.18), transparent 45%),
+      linear-gradient(135deg, #05050a 0%, #0a0a16 45%, #05050a 100%);
+    z-index: 0;
+  }
+  .blob {
+    position: fixed;
+    pointer-events: none;
+    border-radius: 9999px;
+    filter: blur(120px);
+    z-index: 0;
+    animation: floatBlob 16s ease-in-out infinite;
+  }
+  .blob.b1 { top: -8rem; left: -6rem; width: 24rem; height: 24rem; background: rgba(139,92,246,0.2); }
+  .blob.b2 { top: 33%; right: -6rem; width: 28rem; height: 28rem; background: rgba(56,189,248,0.15); animation-duration: 18s; animation-direction: reverse; }
+  .blob.b3 { bottom: -8rem; left: 25%; width: 24rem; height: 24rem; background: rgba(236,72,153,0.15); }
+  @keyframes floatBlob {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    33% { transform: translate(4%,6%) scale(1.08); }
+    66% { transform: translate(-3%,-4%) scale(0.96); }
+  }
+
+  .page {
+    position: relative;
+    z-index: 10;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1rem;
+  }
+  .panel {
+    position: relative;
+    width: 100%;
+    max-width: 48rem;
+    border-radius: 2rem;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(28px) saturate(220%);
+    -webkit-backdrop-filter: blur(28px) saturate(220%);
+    padding: 2.5rem;
+    overflow: hidden;
+  }
+  .top-actions {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    left: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+  .glass-btn {
+    position: relative;
+    border: none;
+    border-radius: 9999px;
+    color: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    backdrop-filter: blur(18px) saturate(220%);
+    -webkit-backdrop-filter: blur(18px) saturate(220%);
+    background: linear-gradient(160deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.12) 45%, rgba(255,255,255,0.06) 100%);
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
+  }
+  .glass-btn.icon { width: 2.25rem; height: 2.25rem; padding: 0; }
+  .glass-btn.labeled { padding: 0.5rem 0.9rem 0.5rem 0.7rem; font-size: 0.8rem; font-weight: 600; white-space: nowrap; height: 2.25rem; }
+  @media (max-width: 520px) {
+    .glass-btn.labeled { padding: 0.5rem 0.7rem; font-size: 0.72rem; }
+  }
+  .glass-btn.violet {
+    background: linear-gradient(160deg, rgba(196,155,255,0.55) 0%, rgba(139,92,246,0.32) 45%, rgba(139,92,246,0.18) 100%);
+  }
+  .glass-btn.active {
+    background: linear-gradient(160deg, rgba(196,155,255,0.55) 0%, rgba(139,92,246,0.32) 45%, rgba(139,92,246,0.18) 100%);
+  }
+  .glass-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .glass-btn.warn::after {
+    content: ""; position: absolute; top: 0; right: 0; width: 0.5rem; height: 0.5rem;
+    border-radius: 9999px; background: #fb7185; box-shadow: 0 0 0 2px rgba(0,0,0,0.4);
+  }
+  .glass-btn:focus-visible, textarea:focus-visible, input:focus-visible {
+    outline: 2px solid #c4b5fd; outline-offset: 2px;
+  }
+
+  .subtitle { text-align: center; font-size: 0.85rem; color: rgba(255,255,255,0.45); margin-top: -0.5rem; }
+
+  /* Stepper */
+  .stepper { display: flex; align-items: center; justify-content: center; gap: 0.4rem; margin-bottom: 0.25rem; flex-wrap: wrap; }
+  .step-item { display: flex; align-items: center; gap: 0.4rem; }
+  .step-dot {
+    width: 1.5rem; height: 1.5rem; border-radius: 9999px; display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 700; color: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+    transition: all 0.25s ease;
+  }
+  .step-item.done .step-dot { background: linear-gradient(160deg, #a78bfa, #7c3aed); color: #fff; border-color: transparent; }
+  .step-item.active .step-dot { background: linear-gradient(160deg, #c4b5fd, #8b5cf6); color: #fff; border-color: transparent; box-shadow: 0 0 0 4px rgba(139,92,246,0.25); }
+  .step-label { font-size: 0.72rem; font-weight: 600; color: rgba(255,255,255,0.4); }
+  .step-item.active .step-label, .step-item.done .step-label { color: rgba(255,255,255,0.85); }
+  .step-line { width: 1.5rem; height: 1px; background: rgba(255,255,255,0.15); }
+  .step-line.done { background: linear-gradient(90deg, #a78bfa, #7c3aed); }
+  .retry-btn { margin-left: 0.5rem; text-decoration: underline; cursor: pointer; color: #c4b5fd; background: none; border: none; font: inherit; }
+  .typing { font-style: italic; color: rgba(255,255,255,0.5); }
+
+  .watermark {
+    text-align: center;
+    font-weight: 700;
+    font-size: 3rem;
+    color: rgba(255,255,255,0.1);
+    text-shadow: 0 1px 1px rgba(255,255,255,0.9), 0 -1px 1px rgba(0,0,0,0.5);
+    margin: 2.5rem 0 1.5rem;
+  }
+
+  textarea, input[type="text"], input[type="password"] {
+    width: 100%;
+    resize: none;
+    border-radius: 1rem;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    outline: none;
+    font-family: inherit;
+  }
+  textarea::placeholder, input::placeholder { color: rgba(255,255,255,0.4); }
+  textarea:focus, input:focus { border-color: rgba(167,139,250,0.6); background: rgba(255,255,255,0.1); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin: 1rem 0; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8);
+    border-radius: 9999px; padding: 0.35rem 0.75rem; font-size: 0.75rem; font-weight: 600;
+  }
+
+  .center-col { display: flex; flex-direction: column; align-items: center; gap: 1.25rem; padding-top: 1rem; }
+
+  .error-text { color: #fb7185; text-align: center; font-size: 0.9rem; }
+
+  .cta {
+    width: 100%; padding: 0.85rem; font-size: 1rem; font-weight: 600; margin-top: 0.5rem;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 200; display: none;
+    align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    position: relative;
+    width: 94vw; max-width: 52rem;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 1.75rem;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.10);
+    backdrop-filter: blur(24px) saturate(200%);
+    -webkit-backdrop-filter: blur(24px) saturate(200%);
+    padding: 2.75rem;
+  }
+  .modal h2 { margin: 0 0 0.75rem; font-size: 1.6rem; padding-right: 2.5rem; }
+  .modal p.hint { margin: 0 0 1.25rem; font-size: 1rem; color: rgba(255,255,255,0.5); }
+  .modal label { display: block; font-size: 0.85rem; font-weight: 600; color: rgba(255,255,255,0.6); margin-bottom: 0.3rem; }
+  .modal input, .modal textarea { margin-bottom: 1.25rem; padding: 0.75rem 1rem; font-size: 1rem; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 0.75rem; }
+  .provider-help-cta {
+    width: 100%; margin-bottom: 1.25rem; justify-content: space-between; gap: 0.6rem;
+    padding: 0.85rem 1.1rem; font-size: 0.9rem; font-weight: 700;
+    background: linear-gradient(160deg, rgba(196,155,255,0.7) 0%, rgba(139,92,246,0.45) 45%, rgba(139,92,246,0.28) 100%);
+    border: 1px solid rgba(196,181,253,0.5);
+    box-shadow: 0 0 0 3px rgba(139,92,246,0.15), 0 8px 24px rgba(139,92,246,0.25);
+    animation: helpCtaGlow 2.4s ease-in-out infinite;
+  }
+  .provider-help-cta span:nth-child(2) { flex: 1; text-align: left; }
+  .provider-help-cta-arrow { font-size: 1.1rem; transition: transform 0.15s ease; }
+  .provider-help-cta:hover .provider-help-cta-arrow { transform: translateX(3px); }
+  @keyframes helpCtaGlow {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(139,92,246,0.15), 0 8px 24px rgba(139,92,246,0.25); }
+    50% { box-shadow: 0 0 0 5px rgba(139,92,246,0.25), 0 8px 30px rgba(139,92,246,0.4); }
+  }
+  .modal .close-btn { position: absolute; top: 1.5rem; right: 1.5rem; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.25rem; }
+  .form-grid .full { grid-column: 1 / -1; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  /* Markdown document view (PRD) */
+  .markdown-body {
+    max-height: 55vh; overflow-y: auto; padding-right: 0.5rem; margin: 1rem 0 1.25rem;
+    font-size: 0.9rem; line-height: 1.65; color: rgba(255,255,255,0.85);
+  }
+  .markdown-body h1, .markdown-body h2, .markdown-body h3,
+  .markdown-body h4, .markdown-body h5, .markdown-body h6 {
+    color: #fff; margin: 1.25rem 0 0.5rem; font-weight: 700;
+  }
+  .markdown-body h1 { font-size: 1.4rem; }
+  .markdown-body h2 { font-size: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.4rem; }
+  .markdown-body h3 { font-size: 1.05rem; }
+  .markdown-body h1:first-child, .markdown-body h2:first-child, .markdown-body h3:first-child { margin-top: 0; }
+  .markdown-body p { margin: 0.5rem 0; }
+  .markdown-body ul { margin: 0.4rem 0 0.75rem; padding-left: 1.4rem; }
+  .markdown-body li { margin: 0.25rem 0; }
+  .markdown-body code { background: rgba(0,0,0,0.3); border-radius: 0.3rem; padding: 0.1rem 0.4rem; font-size: 0.85em; }
+
+  .agent-list {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;
+    max-height: 34rem; overflow-y: auto; padding-right: 0.25rem; margin: 1.25rem 0;
+  }
+  @media (max-width: 560px) { .agent-list { grid-template-columns: 1fr; } }
+  .agent-card {
+    display: flex; align-items: flex-start; gap: 0.65rem;
+    border-radius: 0.9rem; padding: 0.85rem 0.9rem; text-align: left;
+    background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.9);
+    cursor: pointer; border: 1px solid rgba(255,255,255,0.08); width: 100%; font: inherit;
+    transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  }
+  .agent-card:hover { transform: translateY(-2px); background: rgba(255,255,255,0.1); }
+  .agent-card.selected { background: rgba(139,92,246,0.28); color: #fff; border-color: rgba(196,181,253,0.5); }
+  .agent-avatar {
+    width: 2.25rem; height: 2.25rem; border-radius: 9999px;
+    background: rgba(139,92,246,0.3); color: #ede9fe;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.1rem;
+  }
+  .agent-role { font-weight: 600; font-size: 0.9rem; }
+  .agent-summary { font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 0.15rem; }
+  .agent-selected-tag { margin-left: auto; font-size: 0.7rem; color: #c4b5fd; font-weight: 600; flex-shrink: 0; }
+
+  /* Provider help list */
+  .provider-list {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.9rem;
+    max-height: 60vh; overflow-y: auto; padding-right: 0.4rem; margin: 1.25rem 0;
+  }
+  @media (max-width: 720px) { .provider-list { grid-template-columns: 1fr; } }
+  .provider-card {
+    display: flex; flex-direction: column; gap: 0.5rem;
+    border-radius: 1rem; padding: 1.1rem 1.2rem;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+  }
+  .provider-card-head { display: flex; align-items: center; gap: 0.6rem; }
+  .provider-card-head .agent-avatar { width: 2.5rem; height: 2.5rem; font-size: 1.25rem; }
+  .provider-card-name { font-weight: 700; font-size: 1rem; }
+  .provider-field { font-size: 0.82rem; line-height: 1.5; word-break: break-word; }
+  .provider-field b { color: rgba(255,255,255,0.7); font-weight: 600; }
+  .provider-field code { background: rgba(0,0,0,0.3); border-radius: 0.3rem; padding: 0.1rem 0.4rem; font-size: 0.8rem; word-break: break-all; }
+  .provider-hint { font-size: 0.78rem; color: rgba(255,255,255,0.55); line-height: 1.5; }
+  .provider-use-btn { font-size: 0.8rem; padding: 0.5rem 0.9rem; align-self: flex-start; margin-top: 0.2rem; }
+
+  /* Discussion view */
+  .discussion-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .topic-pill { background: rgba(255,255,255,0.1); border-radius: 0.5rem; padding: 0.25rem 0.75rem; font-weight: 600; font-size: 0.9rem; }
+  .model-tag { font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-left: auto; }
+  .messages { display: flex; flex-direction: column; gap: 1rem; max-height: 55vh; overflow-y: auto; padding-right: 0.25rem; }
+  .message {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    animation: msgIn 0.35s ease both;
+  }
+  @keyframes msgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .msg-avatar {
+    width: 2.25rem; height: 2.25rem; border-radius: 9999px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(139,92,246,0.3); color: #ede9fe; font-size: 1rem;
+    border: 1px solid var(--accent, rgba(139,92,246,0.5));
+  }
+  .msg-avatar.moderator { background: rgba(217,70,239,0.3); color: #fae8ff; }
+  .msg-sender { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem; color: rgba(255,255,255,0.8); }
+  .msg-bubble {
+    border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05);
+    border-left: 3px solid var(--accent, rgba(139,92,246,0.6));
+    border-radius: 0.75rem; padding: 0.75rem 1rem; font-size: 0.9rem; line-height: 1.5;
+  }
+  .status-text { text-align: center; font-size: 0.9rem; font-weight: 600; color: #c4b5fd; margin-top: 0.5rem; }
+  .status-text.busy::before {
+    content: ""; display: inline-block; width: 0.5rem; height: 0.5rem; border-radius: 9999px;
+    background: #c4b5fd; margin-right: 0.4rem; animation: pulseDot 1s ease-in-out infinite;
+  }
+  @keyframes pulseDot { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+  /* Visualize modal */
+  .visualize-overlay {
+    position: fixed; inset: 0; z-index: 300; display: none;
+    align-items: center; justify-content: center; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+  }
+  .visualize-overlay.open { display: flex; }
+  .visualize-modal {
+    position: relative; width: 90vw; height: 90vh; display: flex; flex-direction: column;
+    border-radius: 1rem; border: 1px solid rgba(255,255,255,0.1); background: #0f0f1f; overflow: hidden;
+  }
+  .visualize-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0.75rem 1.25rem; }
+  .visualize-header h2 { margin: 0; font-size: 0.9rem; color: rgba(255,255,255,0.8); }
+  .visualize-subtitle { margin-top: 0.2rem; font-size: 0.72rem; color: rgba(255,255,255,0.4); }
+  .visualize-header-actions { display: flex; gap: 0.5rem; align-items: center; }
+  .visualize-body { position: relative; flex: 1; overflow: hidden; }
+  .visualize-body iframe { width: 100%; height: 100%; border: 0; background: #fff; }
+  .visualize-loading {
+    height: 100%; width: 100%; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 1rem;
+    background: linear-gradient(135deg, #0f0f1f, #1a1030, #0f0f1f);
+    padding: 1.5rem;
+  }
+  .loading-header { display: flex; align-items: center; gap: 1rem; justify-content: center; flex-shrink: 0; }
+  .loading-orb { position: relative; width: 3.5rem; height: 3.5rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .loading-orb .ping { position: absolute; border-radius: 9999px; background: rgba(139,92,246,0.2); inset: 0; animation: ping 2s cubic-bezier(0,0,0.2,1) infinite; }
+  .loading-orb .ping2 { position: absolute; border-radius: 9999px; background: rgba(217,70,239,0.2); inset: 0.35rem; animation: ping 2s cubic-bezier(0,0,0.2,1) infinite; animation-delay: 0.2s; }
+  .loading-orb .core {
+    position: relative; width: 2.25rem; height: 2.25rem; border-radius: 9999px; color: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+    background: linear-gradient(135deg, #8b5cf6, #d946ef);
+  }
+  @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+  .loading-text { text-align: left; }
+  .loading-text .title { font-size: 1.05rem; font-weight: 600; color: rgba(255,255,255,0.9); }
+  .loading-text .step { font-size: 0.82rem; color: rgba(255,255,255,0.5); margin-top: 0.2rem; }
+
+  /* Live streaming code viewer */
+  .code-stream-wrap {
+    flex: 1; min-height: 0; display: flex; flex-direction: column;
+    border-radius: 0.85rem; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.35);
+  }
+  .code-stream-bar {
+    display: flex; align-items: center; gap: 0.4rem; padding: 0.6rem 0.9rem;
+    background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink: 0;
+  }
+  .code-dot { width: 0.6rem; height: 0.6rem; border-radius: 9999px; display: inline-block; }
+  .code-dot.red { background: #fb7185; }
+  .code-dot.yellow { background: #fbbf24; }
+  .code-dot.green { background: #34d399; }
+  .code-stream-label { margin-left: 0.5rem; font-size: 0.75rem; color: rgba(255,255,255,0.45); font-family: monospace; }
+  .code-stream {
+    flex: 1; min-height: 0; margin: 0; padding: 1rem 1.25rem; overflow-y: auto;
+    font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 0.78rem; line-height: 1.6;
+    color: #c9d1e0; white-space: pre-wrap; word-break: break-all;
+  }
+  .code-stream code { color: #a5f3c9; }
+  .code-cursor {
+    display: inline-block; width: 0.5rem; height: 1em; background: #c4b5fd; vertical-align: text-bottom;
+    animation: cursorBlink 0.9s step-end infinite; margin-left: 1px;
+  }
+  @keyframes cursorBlink { 50% { opacity: 0; } }
+
+  .visualize-error { height: 100%; display: flex; align-items: center; justify-content: center; padding: 0 2rem; text-align: center; color: #fb7185; font-size: 0.9rem; }
+
+  @media (max-width: 480px) {
+    .watermark { font-size: 2rem; }
+    .panel { padding: 1.5rem; border-radius: 1.25rem; }
+    .visualize-modal { width: 100vw; height: 100vh; border-radius: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-gradient"></div>
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<div class="blob b3"></div>
+
+<div class="page">
+  <div class="panel">
+    <div class="top-actions">
+      <button class="glass-btn labeled" id="btn-agents" title="Pick agents" aria-label="Pick agents">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="8" width="16" height="11" rx="3" stroke="currentColor" stroke-width="1.6" />
+          <circle cx="9" cy="13.5" r="1.4" fill="currentColor" />
+          <circle cx="15" cy="13.5" r="1.4" fill="currentColor" />
+          <path d="M12 8V5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+          <circle cx="12" cy="3.5" r="1.3" stroke="currentColor" stroke-width="1.4" />
+          <path d="M2.5 12.5H4M20 12.5h1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+          <path d="M8.5 19v1.2M15.5 19v1.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        </svg>
+        <span class="btn-label">Agents</span>
+      </button>
+      <button class="glass-btn labeled" id="btn-key" title="LLM key" aria-label="LLM key">
+        <svg width="18" height="18" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 6.5V4.5C4 2.567 5.567 1 7.5 1C9.433 1 11 2.567 11 4.5V6.5M3.5 6.5H11.5C12.0523 6.5 12.5 6.94772 12.5 7.5V13C12.5 13.5523 12.0523 14 11.5 14H3.5C2.94772 14 2.5 13.5523 2.5 13V7.5C2.5 6.94772 2.94772 6.5 3.5 6.5Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+        <span class="btn-label">Key</span>
+      </button>
+      <button class="glass-btn labeled" id="btn-create-agent" title="Create your own agent" aria-label="Create your own agent">
+        <svg width="18" height="18" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7.5 1V14M1 7.5H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span class="btn-label">New Agent</span>
+      </button>
+      <button class="glass-btn labeled" id="btn-reset" title="Reset agent selection" aria-label="Reset agent selection">
+        <svg width="18" height="18" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1.90321 7.29677C1.90321 10.341 4.11041 12.4462 6.58893 12.8622C6.87255 12.9101 7.06266 13.1791 7.01471 13.4628C6.96676 13.7464 6.69775 13.9365 6.41413 13.8885C3.49942 13.3971 0.86321 10.9066 0.86321 7.29677C0.86321 5.76199 1.55234 4.39471 2.6172 3.15453L1.31578 2.85419C1.05186 2.79352 0.907186 2.53355 0.968054 2.26964C1.02888 2.00572 1.28881 1.86105 1.55274 1.92192L4.09404 2.50907C4.36145 2.57076 4.55272 2.83184 4.50238 3.10313L4.02358 5.65142C3.97481 5.91288 3.72272 6.08543 3.46135 6.03666C3.19989 5.98789 3.02735 5.7358 3.07612 5.47435L3.28402 4.36607C2.42073 5.43449 1.90321 6.42357 1.90321 7.29677Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/>
+          <path d="M13.0968 7.70323C13.0968 4.65899 10.8896 2.55382 8.41107 2.1378C8.12745 2.08986 7.93734 1.82089 7.98529 1.53727C8.03323 1.25364 8.30224 1.06352 8.58586 1.1115C11.5006 1.60289 14.1368 4.09342 14.1368 7.70323C14.1368 9.23801 13.4477 10.6053 12.3828 11.8455L13.6842 12.1458C13.9481 12.2065 14.0928 12.4665 14.0319 12.7304C13.9711 12.9943 13.7112 13.139 13.4472 13.0781L10.906 12.4909C10.6386 12.4292 10.4473 12.1682 10.4976 11.8969L10.9764 9.34858C11.0252 9.08712 11.2773 8.91457 11.5387 8.96334C11.8001 9.01211 11.9727 9.2642 11.9239 9.52565L11.716 10.6339C12.5793 9.56551 13.0968 8.57643 13.0968 7.70323Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/>
+        </svg>
+        <span class="btn-label">Reset</span>
+      </button>
+      <button class="glass-btn labeled" id="btn-about" title="About K-Panel" aria-label="About K-Panel">
+        <svg width="18" height="18" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7.5 0.875C3.83375 0.875 0.875 3.83375 0.875 7.5C0.875 11.1662 3.83375 14.125 7.5 14.125C11.1662 14.125 14.125 11.1662 14.125 7.5C14.125 3.83375 11.1662 0.875 7.5 0.875ZM7.5 4.125C7.9142 4.125 8.25 4.4608 8.25 4.875C8.25 5.2892 7.9142 5.625 7.5 5.625C7.0858 5.625 6.75 5.2892 6.75 4.875C6.75 4.4608 7.0858 4.125 7.5 4.125ZM8.5 10.875H6.5V10H7V7.25H6.5V6.375H7.75C8.02614 6.375 8.25 6.59886 8.25 6.875V10H8.5V10.875Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/>
+        </svg>
+        <span class="btn-label">About</span>
+      </button>
+    </div>
+
+    <!-- Start screen -->
+    <div id="start-screen" class="center-col">
+      <div class="watermark">K-Panel</div>
+      <div class="stepper" id="stepper">
+        <div class="step-item" data-step="agents"><span class="step-dot">1</span><span class="step-label">Agents</span></div>
+        <div class="step-line" data-line="1"></div>
+        <div class="step-item" data-step="key"><span class="step-dot">2</span><span class="step-label">Key</span></div>
+        <div class="step-line" data-line="2"></div>
+        <div class="step-item" data-step="topic"><span class="step-dot">3</span><span class="step-label">Topic</span></div>
+      </div>
+      <p class="subtitle">Pick 2+ experts, set your LLM key, then describe your idea below.</p>
+      <textarea id="topic-input" rows="3" placeholder="Start with your idea / topic here"></textarea>
+      <div class="chips" id="selected-chips"></div>
+      <button class="glass-btn violet cta" id="btn-start">Start Discussion</button>
+      <div class="error-text" id="start-error"></div>
+    </div>
+
+    <!-- Discussion screen -->
+    <div id="discussion-screen" style="display:none; padding-top: 1.5rem;">
+      <div class="discussion-header">
+        <span style="font-size:0.9rem; font-weight:600; color: rgba(255,255,255,0.5);">Topic</span>
+        <span class="topic-pill" id="topic-pill"></span>
+        <button class="glass-btn" id="btn-copy" style="padding: 0.35rem 0.75rem; font-size: 0.75rem;">Download Transcript</button>
+        <span class="model-tag" id="model-tag"></span>
+      </div>
+      <div class="messages" id="messages"></div>
+      <div style="display:flex; gap:0.6rem; margin-top:0.5rem;">
+        <button class="glass-btn" id="btn-view-prd" style="display:none; flex:1;">View PRD</button>
+        <button class="glass-btn violet cta" id="btn-visualize" style="display:none; flex:1; margin-top:0;">Visualize</button>
+      </div>
+      <div class="error-text" id="discussion-error"></div>
+      <div class="status-text" id="status-text"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Agent picker modal -->
+<div class="modal-overlay" id="agent-modal">
+  <div class="modal" style="max-width: 58rem;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 0.5rem;">
+      <h2 style="padding-right:0;">Pick your agents</h2>
+      <button class="glass-btn icon close-btn" id="agent-modal-close" style="position:static;" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/></svg>
+      </button>
+    </div>
+    <input type="text" id="agent-search" placeholder="Search by role or name..." />
+    <div class="agent-list" id="agent-list"></div>
+    <div style="display:flex; gap:0.6rem;">
+      <button class="glass-btn" id="agent-modal-create" style="flex:1;">+ Create your own agent</button>
+      <button class="glass-btn violet" style="flex:1;" id="agent-modal-done">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create agent modal -->
+<div class="modal-overlay" id="create-agent-modal">
+  <div class="modal" style="max-width: 44rem;">
+    <button class="glass-btn icon close-btn" id="create-agent-close" aria-label="Close">
+      <svg width="16" height="16" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/></svg>
+    </button>
+    <h2>Create your own agent</h2>
+    <p class="hint">Saved as a YAML file on the backend and available immediately — no server restart needed.</p>
+    <div class="form-grid">
+      <div>
+        <label>Name</label>
+        <input type="text" id="create-agent-name" placeholder="e.g. Priya Sharma" />
+      </div>
+      <div>
+        <label>Role</label>
+        <input type="text" id="create-agent-role" placeholder="e.g. SEO Strategist" />
+      </div>
+      <div>
+        <label>Avatar (emoji, optional)</label>
+        <input type="text" id="create-agent-avatar" placeholder="🔍" />
+      </div>
+      <div>
+        <label>Expertise (comma separated)</label>
+        <input type="text" id="create-agent-expertise" placeholder="SEO, Keyword Research, Analytics" />
+      </div>
+      <div class="full">
+        <label>Summary (one line, optional)</label>
+        <input type="text" id="create-agent-summary" placeholder="Optimizes content for search visibility." />
+      </div>
+      <div class="full">
+        <label>System Prompt</label>
+        <textarea id="create-agent-prompt" rows="5" placeholder="You are Priya Sharma, an SEO Strategist. You specialize in..." style="width:100%; border-radius:1rem; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#fff; padding:0.75rem 1rem; font-size:0.95rem; font-family:inherit;"></textarea>
+      </div>
+    </div>
+    <div class="error-text" id="create-agent-error" style="text-align:left; margin-bottom: 0.5rem;"></div>
+    <div class="modal-actions">
+      <button class="glass-btn" id="create-agent-cancel">Cancel</button>
+      <button class="glass-btn violet" id="create-agent-save">Create Agent</button>
+    </div>
+  </div>
+</div>
+
+<!-- LLM key modal -->
+<div class="modal-overlay" id="key-modal">
+  <div class="modal">
+    <button class="glass-btn icon close-btn" id="key-modal-close" aria-label="Close">
+      <svg width="16" height="16" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/></svg>
+    </button>
+    <h2>OpenAI-Compatible API Connection</h2>
+    <p class="hint">Works with OpenAI, Azure OpenAI, OpenRouter, Together, local (Ollama/vLLM) or any proxy that implements the standard <code>/chat/completions</code> API. Stored locally in your browser and sent with each request.</p>
+    <button type="button" class="glass-btn violet provider-help-cta" id="key-help-btn">
+      <svg width="18" height="18" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.5 1a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM7.5 4a1.75 1.75 0 00-1.732 1.5.5.5 0 11-.99-.15A2.75 2.75 0 018.9 5.6c0 .77-.5 1.15-.92 1.45-.36.26-.66.47-.66.95v.1a.5.5 0 01-1 0v-.1c0-1 .62-1.42 1.08-1.75.35-.25.5-.38.5-.65A1.25 1.25 0 007.5 4zm0 6.75a.65.65 0 100 1.3.65.65 0 000-1.3z" fill="currentColor"/></svg>
+      <span>Help me choose a provider</span>
+      <span class="provider-help-cta-arrow">&rarr;</span>
+    </button>
+    <label>API Key</label>
+    <input type="password" id="key-token" placeholder="sk-..." />
+    <label>Base URL (optional)</label>
+    <input type="text" id="key-base-url" placeholder="https://api.openai.com/v1" />
+    <label>Model (optional)</label>
+    <input type="text" id="key-model" placeholder="gpt-5.2" />
+    <label>User (optional)</label>
+    <input type="text" id="key-user" placeholder="Some providers require a 'user' identifier" />
+    <div class="modal-actions">
+      <button class="glass-btn" id="key-cancel">Cancel</button>
+      <button class="glass-btn violet" id="key-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Provider help modal -->
+<div class="modal-overlay" id="provider-help-modal">
+  <div class="modal" style="max-width: 68rem;">
+    <button class="glass-btn icon close-btn" id="provider-help-close" aria-label="Close">
+      <svg width="16" height="16" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/></svg>
+    </button>
+    <h2>Popular LLM Providers</h2>
+    <p class="hint">Any provider below speaks the OpenAI <code>/chat/completions</code> protocol, so it works directly with K-Panel. Click "Use these" to fill the form for that provider (you'll still need to paste your own API key).</p>
+    <div class="provider-list" id="provider-help-list"></div>
+  </div>
+</div>
+
+<!-- About K-Panel modal -->
+<div class="modal-overlay" id="about-modal">
+  <div class="modal">
+    <button class="glass-btn icon close-btn" id="about-modal-close" aria-label="Close">
+      <svg width="16" height="16" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/></svg>
+    </button>
+    <h2>About K-Panel</h2>
+    <p class="hint" style="margin-bottom: 1rem;">
+      K-Panel is a lightweight demo of an "agentic system": a virtual panel of AI
+      experts (each with their own persona and specialty) that discuss a topic you
+      give them, turn-by-turn. Once every expert has spoken, their entire discussion
+      is synthesized into a structured <b style="color:#fff;">Product Requirements
+      Document (PRD)</b> in Markdown &mdash; capturing the value proposition, target
+      audience, brand tone, features, visual direction, and copy guidance from the
+      whole panel. That PRD is then used to generate a visually rich, single-page
+      website prototype.
+    </p>
+    <p class="hint" style="margin-bottom: 1rem;">
+      <b style="color:#fff;">How to use it:</b><br/>
+      1. Click "Agents" to pick at least two experts for your panel, or click
+      "New Agent" to create your own custom expert (saved instantly on the
+      backend as a reusable agent &mdash; no restart needed).<br/>
+      2. Click "Key" to set your own OpenAI-compatible API key (and optionally a
+      custom base URL / model / user) &mdash; it's stored only in your browser.
+      Use "Help me choose a provider" if you're not sure which service or
+      settings to use.<br/>
+      3. Type your idea or topic and start the discussion; the experts will take
+      turns automatically, then a PRD is written from everything they said.<br/>
+      4. Click "View PRD" to read/download the generated Markdown document, or
+      "Visualize" to turn that PRD into a single-page website prototype (watch
+      the HTML stream in live), then download it if you like it.
+    </p>
+    <p class="hint" style="margin-bottom: 0;">
+      This is a teaching example, not a production system &mdash; your API key
+      is sent directly from the browser to the backend on every request.
+    </p>
+    <div class="modal-actions">
+      <button class="glass-btn violet" id="about-close-btn">Got it</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRD modal -->
+<div class="modal-overlay" id="prd-modal">
+  <div class="modal" style="max-width: 56rem;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 0.5rem;">
+      <h2 style="padding-right:0;">Product Requirements Document</h2>
+      <button class="glass-btn icon close-btn" id="prd-modal-close" style="position:static;" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/></svg>
+      </button>
+    </div>
+    <p class="hint">Synthesized from the full panel discussion. This document is used as the direct input for generating the website prototype.</p>
+    <div class="markdown-body" id="prd-content"></div>
+    <div class="modal-actions">
+      <button class="glass-btn" id="prd-download">Download .md</button>
+      <button class="glass-btn violet" id="prd-close-btn">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Visualize modal -->
+<div class="visualize-overlay" id="visualize-modal">
+  <div class="visualize-modal">
+    <div class="visualize-header">
+      <div>
+        <h2>Prototype Preview</h2>
+        <div class="visualize-subtitle">Larger models may take a while to generate the prototype — typically ~1 to 5 minutes.</div>
+      </div>
+      <div class="visualize-header-actions">
+        <button class="glass-btn" id="visualize-regenerate">Regenerate</button>
+        <button class="glass-btn violet" id="visualize-download" style="display:none;">Download HTML</button>
+        <button class="glass-btn icon" id="visualize-close" aria-label="Close">
+          <svg width="16" height="16" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="visualize-body" id="visualize-body">
+      <div class="visualize-loading" id="visualize-loading">
+        <div class="loading-header">
+          <div class="loading-orb">
+            <span class="ping"></span>
+            <span class="ping2"></span>
+            <span class="core">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="4" y="8" width="16" height="11" rx="3" stroke="currentColor" stroke-width="1.6" />
+                <circle cx="9" cy="13.5" r="1.4" fill="currentColor" />
+                <circle cx="15" cy="13.5" r="1.4" fill="currentColor" />
+                <path d="M12 8V5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                <circle cx="12" cy="3.5" r="1.3" stroke="currentColor" stroke-width="1.4" />
+                <path d="M2.5 12.5H4M20 12.5h1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                <path d="M8.5 19v1.2M15.5 19v1.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+              </svg>
+            </span>
+          </div>
+          <div class="loading-text">
+            <div class="title">Crafting a stunning prototype…</div>
+            <div class="step" id="loading-step">Reading the full panel discussion…</div>
+          </div>
+        </div>
+        <div class="code-stream-wrap">
+          <div class="code-stream-bar">
+            <span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span>
+            <span class="code-stream-label">prototype.html</span>
+          </div>
+          <pre class="code-stream" id="code-stream"><code id="code-stream-content"></code><span class="code-cursor"></span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---- Config ----
+  const API_BASE = "http://127.0.0.1:8877";
+  const STORAGE_TOKEN = "k_panel_llm_token";
+  const STORAGE_BASE_URL = "k_panel_llm_base_url";
+  const STORAGE_MODEL = "k_panel_llm_model";
+  const STORAGE_USER = "k_panel_llm_user";
+
+  // ---- LocalStorage helpers (compatible with the Next.js app) ----
+  function getLlmToken() { return localStorage.getItem(STORAGE_TOKEN) || ""; }
+  function setLlmToken(v) { v ? localStorage.setItem(STORAGE_TOKEN, v) : localStorage.removeItem(STORAGE_TOKEN); }
+  function getLlmBaseUrl() { return localStorage.getItem(STORAGE_BASE_URL) || ""; }
+  function setLlmBaseUrl(v) { v ? localStorage.setItem(STORAGE_BASE_URL, v) : localStorage.removeItem(STORAGE_BASE_URL); }
+  function getLlmModel() { return localStorage.getItem(STORAGE_MODEL) || ""; }
+  function setLlmModel(v) { v ? localStorage.setItem(STORAGE_MODEL, v) : localStorage.removeItem(STORAGE_MODEL); }
+  function getLlmUser() { return localStorage.getItem(STORAGE_USER) || ""; }
+  function setLlmUser(v) { v ? localStorage.setItem(STORAGE_USER, v) : localStorage.removeItem(STORAGE_USER); }
+
+
+  function extractHtml(text) {
+    let s = text.trim();
+    if (s.startsWith("```")) {
+      const lines = s.split("\n");
+      if (lines[0].startsWith("```")) lines.shift();
+      if (lines.length && lines[lines.length - 1].trim().startsWith("```")) lines.pop();
+      s = lines.join("\n").trim();
+    }
+    return s;
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  const AVATAR_ICON = '<svg width="14" height="14" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.5 0.875C5.49797 0.875 3.875 2.49797 3.875 4.5C3.875 6.15288 4.98124 7.54738 6.49373 7.98351C3.41855 8.40901 1.05 11.0104 1.05 14.1667C1.05 14.4658 1.29079 14.7083 1.5875 14.7083H13.4125C13.7092 14.7083 13.95 14.4658 13.95 14.1667C13.95 11.0104 11.5814 8.40901 8.50627 7.98351C10.0188 7.54738 11.125 6.15288 11.125 4.5C11.125 2.49797 9.50203 0.875 7.5 0.875Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/></svg>';
+
+  const AGENT_ACCENTS = ["#a78bfa", "#38bdf8", "#f472b6", "#34d399", "#fbbf24", "#fb7185", "#818cf8", "#2dd4bf"];
+  function accentFor(key) {
+    let hash = 0;
+    for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+    return AGENT_ACCENTS[hash % AGENT_ACCENTS.length];
+  }
+
+  function renderMarkdown(content) {
+    let html = escapeHtml(content)
+      .replace(/`([^`]+)`/g, "<code>$1</code>")
+      .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
+      .replace(/\*([^*]+)\*/g, "<i>$1</i>")
+      .replace(/\n/g, "<br/>")
+      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color:#c4b5fd;">$1</a>');
+    return html;
+  }
+
+  function renderMarkdownDocument(content) {
+    // A slightly fuller Markdown renderer (headings, lists, paragraphs, bold/italic/code/links)
+    // used for the PRD document view, which needs more structure than chat bubbles.
+    const lines = (content || "").replace(/\r\n/g, "\n").split("\n");
+    let html = "";
+    let inList = false;
+    const closeList = () => { if (inList) { html += "</ul>"; inList = false; } };
+    const inline = (text) =>
+      escapeHtml(text)
+        .replace(/`([^`]+)`/g, "<code>$1</code>")
+        .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
+        .replace(/\*([^*]+)\*/g, "<i>$1</i>")
+        .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color:#c4b5fd;">$1</a>');
+    for (const rawLine of lines) {
+      const line = rawLine.trimEnd();
+      const heading = line.match(/^(#{1,6})\s+(.*)$/);
+      const listItem = line.match(/^\s*[-*]\s+(.*)$/);
+      if (heading) {
+        closeList();
+        const level = heading[1].length;
+        html += `<h${level}>${inline(heading[2])}</h${level}>`;
+      } else if (listItem) {
+        if (!inList) { html += "<ul>"; inList = true; }
+        html += `<li>${inline(listItem[1])}</li>`;
+      } else if (line.trim() === "") {
+        closeList();
+      } else {
+        closeList();
+        html += `<p>${inline(line)}</p>`;
+      }
+    }
+    closeList();
+    return html;
+  }
+
+  // ---- State ----
+  let agents = [];
+  let selected = [];
+  let topic = "";
+  let history = [];
+  let prd = null;
+  let status = "idle";
+  let discussionStarted = false;
+
+  // ---- DOM refs ----
+  const startScreen = document.getElementById("start-screen");
+  const discussionScreen = document.getElementById("discussion-screen");
+  const topicInput = document.getElementById("topic-input");
+  const stepperEl = document.getElementById("stepper");
+  function updateStepper() {
+    if (!stepperEl) return;
+    const hasAgents = selected.length >= 2;
+    const hasKey = !!getLlmToken();
+    const hasTopic = topicInput.value.trim().length > 0;
+    const items = stepperEl.querySelectorAll(".step-item");
+    const lines = stepperEl.querySelectorAll(".step-line");
+    const states = [hasAgents, hasKey, hasTopic];
+    items.forEach((el, i) => {
+      el.classList.toggle("done", states[i]);
+      el.classList.toggle("active", !states[i] && (i === 0 || states[i - 1]));
+    });
+    lines.forEach((el, i) => el.classList.toggle("done", states[i]));
+  }
+
+  const selectedChips = document.getElementById("selected-chips");
+  const startError = document.getElementById("start-error");
+  const btnStart = document.getElementById("btn-start");
+  const btnReset = document.getElementById("btn-reset");
+  const btnAgents = document.getElementById("btn-agents");
+  const btnKey = document.getElementById("btn-key");
+  const btnAbout = document.getElementById("btn-about");
+  const btnVisualize = document.getElementById("btn-visualize");
+  const btnViewPrd = document.getElementById("btn-view-prd");
+  const btnCopy = document.getElementById("btn-copy");
+  const modelTag = document.getElementById("model-tag");
+  const topicPill = document.getElementById("topic-pill");
+  const messagesEl = document.getElementById("messages");
+  const discussionError = document.getElementById("discussion-error");
+  const statusText = document.getElementById("status-text");
+
+  const agentModal = document.getElementById("agent-modal");
+  const agentSearch = document.getElementById("agent-search");
+  const agentList = document.getElementById("agent-list");
+  const agentModalClose = document.getElementById("agent-modal-close");
+  const agentModalDone = document.getElementById("agent-modal-done");
+
+  const keyModal = document.getElementById("key-modal");
+  const keyToken = document.getElementById("key-token");
+  const keyBaseUrl = document.getElementById("key-base-url");
+  const keyModel = document.getElementById("key-model");
+  const keyUser = document.getElementById("key-user");
+  const keyModalClose = document.getElementById("key-modal-close");
+  const keyCancel = document.getElementById("key-cancel");
+  const keySave = document.getElementById("key-save");
+
+  const aboutModal = document.getElementById("about-modal");
+  const aboutModalClose = document.getElementById("about-modal-close");
+  const aboutCloseBtn = document.getElementById("about-close-btn");
+
+  btnAbout.addEventListener("click", () => openModal(aboutModal));
+  aboutModalClose.addEventListener("click", () => closeModal(aboutModal));
+  aboutCloseBtn.addEventListener("click", () => closeModal(aboutModal));
+
+  const prdModal = document.getElementById("prd-modal");
+  const prdModalClose = document.getElementById("prd-modal-close");
+  const prdCloseBtn = document.getElementById("prd-close-btn");
+  const prdContentEl = document.getElementById("prd-content");
+  const prdDownloadBtn = document.getElementById("prd-download");
+
+  btnViewPrd.addEventListener("click", () => {
+    prdContentEl.innerHTML = renderMarkdownDocument(prd || "");
+    openModal(prdModal);
+  });
+  prdModalClose.addEventListener("click", () => closeModal(prdModal));
+  prdCloseBtn.addEventListener("click", () => closeModal(prdModal));
+  prdDownloadBtn.addEventListener("click", () => {
+    if (!prd) return;
+    const blob = new Blob([prd], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "prd.md";
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  const visualizeModal = document.getElementById("visualize-modal");
+  const visualizeBody = document.getElementById("visualize-body");
+  const visualizeLoading = document.getElementById("visualize-loading");
+  const visualizeClose = document.getElementById("visualize-close");
+  const visualizeRegenerate = document.getElementById("visualize-regenerate");
+  const visualizeDownload = document.getElementById("visualize-download");
+  const loadingStepEl = document.getElementById("loading-step");
+  const codeStreamEl = document.getElementById("code-stream");
+  const codeStreamContentEl = document.getElementById("code-stream-content");
+
+  function appendCodeStream(text) {
+    if (!codeStreamContentEl) return;
+    codeStreamContentEl.textContent = text;
+    if (codeStreamEl) codeStreamEl.scrollTop = codeStreamEl.scrollHeight;
+  }
+  function resetCodeStream() {
+    if (codeStreamContentEl) codeStreamContentEl.textContent = "";
+  }
+
+  let visualizeHtmlResult = null;
+  let visualizeIframe = null;
+  let loadingStepTimer = null;
+  const loadingSteps = [
+    "Reading the full panel discussion…",
+    "Synthesizing insights from every expert…",
+    "Drafting the product brief…",
+    "Designing layout & color palette…",
+    "Writing on-brand copy & mock content…",
+    "Polishing visuals & animations…",
+  ];
+
+  // ---- Generic modal helpers: Escape-to-close + return focus to the trigger ----
+  let lastFocused = null;
+  function openModal(el) {
+    lastFocused = document.activeElement;
+    el.classList.add("open");
+    const focusable = el.querySelector("input, button");
+    if (focusable) focusable.focus();
+  }
+  function closeModal(el) {
+    el.classList.remove("open");
+    if (lastFocused) lastFocused.focus();
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    document.querySelectorAll(".modal-overlay.open, .visualize-overlay.open").forEach(closeModal);
+  });
+
+  // ---- Load agents ----
+  agentList.innerHTML = '<div style="padding:1.5rem 0; text-align:center; font-size:0.85rem; color:rgba(255,255,255,0.4);">Loading experts…</div>';
+  fetch(API_BASE + "/agents")
+    .then((r) => r.json())
+    .then((data) => { agents = data.agents || []; renderSelectedChips(); })
+    .catch(() => {
+      agentList.innerHTML = '<div style="padding:1.5rem 0; text-align:center; font-size:0.85rem; color:#fb7185;">Could not reach the backend. Is it running?</div>';
+    });
+
+  function renderSelectedChips() {
+    selectedChips.innerHTML = selected
+      .map((id) => {
+        const a = agents.find((x) => x.id === id);
+        if (!a) return "";
+        return `<span class="chip" data-id="${id}" title="Click to remove" style="cursor:pointer;">${AVATAR_ICON} ${escapeHtml(a.role)}</span>`;
+      })
+      .join("");
+    selectedChips.querySelectorAll(".chip").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        selected = selected.filter((x) => x !== chip.getAttribute("data-id"));
+        renderSelectedChips();
+        updateAgentsButtonState();
+      });
+    });
+  }
+
+  function renderAgentList() {
+    const q = agentSearch.value.toLowerCase();
+    const filtered = agents.filter(
+      (a) => a.role.toLowerCase().includes(q) || a.name.toLowerCase().includes(q)
+    );
+    if (filtered.length === 0) {
+      agentList.innerHTML = '<div style="padding:1.5rem 0; text-align:center; font-size:0.85rem; color:rgba(255,255,255,0.4);">No experts found.</div>';
+      return;
+    }
+    agentList.innerHTML = filtered
+      .map((a) => {
+        const isSelected = selected.includes(a.id);
+        return `
+          <button type="button" class="agent-card ${isSelected ? "selected" : ""}" data-id="${a.id}">
+            <span class="agent-avatar">${AVATAR_ICON}</span>
+            <span>
+              <div class="agent-role">${escapeHtml(a.role)}</div>
+              <div class="agent-summary">${escapeHtml(a.summary || "")}</div>
+            </span>
+            ${isSelected ? '<span class="agent-selected-tag">Selected</span>' : ""}
+          </button>`;
+      })
+      .join("");
+    agentList.querySelectorAll(".agent-card").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        if (selected.includes(id)) selected = selected.filter((x) => x !== id);
+        else selected.push(id);
+        renderAgentList();
+        renderSelectedChips();
+        updateAgentsButtonState();
+      });
+    });
+  }
+
+  btnAgents.addEventListener("click", () => { renderAgentList(); openModal(agentModal); });
+  agentModalClose.addEventListener("click", () => closeModal(agentModal));
+  agentModalDone.addEventListener("click", () => closeModal(agentModal));
+  agentSearch.addEventListener("input", renderAgentList);
+
+  // ---- Create your own agent ----
+  const btnCreateAgent = document.getElementById("btn-create-agent");
+  const createAgentModal = document.getElementById("create-agent-modal");
+  const createAgentClose = document.getElementById("create-agent-close");
+  const createAgentCancel = document.getElementById("create-agent-cancel");
+  const createAgentSave = document.getElementById("create-agent-save");
+  const createAgentError = document.getElementById("create-agent-error");
+  const caName = document.getElementById("create-agent-name");
+  const caRole = document.getElementById("create-agent-role");
+  const caAvatar = document.getElementById("create-agent-avatar");
+  const caExpertise = document.getElementById("create-agent-expertise");
+  const caSummary = document.getElementById("create-agent-summary");
+  const caPrompt = document.getElementById("create-agent-prompt");
+  const agentModalCreate = document.getElementById("agent-modal-create");
+
+  function openCreateAgentModal() {
+    createAgentError.textContent = "";
+    caName.value = ""; caRole.value = ""; caAvatar.value = "";
+    caExpertise.value = ""; caSummary.value = ""; caPrompt.value = "";
+    openModal(createAgentModal);
+  }
+  btnCreateAgent.addEventListener("click", openCreateAgentModal);
+  agentModalCreate.addEventListener("click", openCreateAgentModal);
+  createAgentClose.addEventListener("click", () => closeModal(createAgentModal));
+  createAgentCancel.addEventListener("click", () => closeModal(createAgentModal));
+
+  createAgentSave.addEventListener("click", async () => {
+    const name = caName.value.trim();
+    const role = caRole.value.trim();
+    const system_prompt = caPrompt.value.trim();
+    createAgentError.textContent = "";
+    if (!name || !role || !system_prompt) {
+      createAgentError.textContent = "Name, role, and system prompt are required.";
+      return;
+    }
+    createAgentSave.disabled = true;
+    createAgentSave.textContent = "Creating…";
+    try {
+      const res = await fetch(API_BASE + "/agents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name, role, system_prompt,
+          avatar: caAvatar.value.trim(),
+          expertise: caExpertise.value.trim(),
+          summary: caSummary.value.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        createAgentError.textContent = data.error || "Failed to create agent.";
+        return;
+      }
+      agents.push(data);
+      selected.push(data.id);
+      renderSelectedChips();
+      updateAgentsButtonState();
+      closeModal(createAgentModal);
+      renderAgentList();
+      openModal(agentModal);
+    } catch (e) {
+      createAgentError.textContent = "Could not reach the backend.";
+    } finally {
+      createAgentSave.disabled = false;
+      createAgentSave.textContent = "Create Agent";
+    }
+  });
+
+  btnKey.addEventListener("click", () => {
+    keyToken.value = getLlmToken();
+    keyBaseUrl.value = getLlmBaseUrl();
+    keyModel.value = getLlmModel();
+    keyUser.value = getLlmUser();
+    keySave.textContent = "Save";
+    openModal(keyModal);
+  });
+  keyModalClose.addEventListener("click", () => closeModal(keyModal));
+  keyCancel.addEventListener("click", () => closeModal(keyModal));
+  keySave.addEventListener("click", () => {
+    setLlmToken(keyToken.value.trim());
+    setLlmBaseUrl(keyBaseUrl.value.trim());
+    setLlmModel(keyModel.value.trim());
+    setLlmUser(keyUser.value.trim());
+    updateKeyButtonState();
+    keySave.textContent = "Saved!";
+    setTimeout(() => closeModal(keyModal), 500);
+  });
+
+  // ---- Provider help ----
+  const PROVIDERS = [
+    {
+      name: "GroqCloud",
+      avatar: "⚡",
+      baseUrl: "https://api.groq.com/openai/v1",
+      model: "llama-3.3-70b-versatile",
+      keyHint: "Free/low-latency inference. Get key from <a href='https://console.groq.com/keys' target='_blank' style='color:#c4b5fd;text-decoration:underline;'>console.groq.com/keys</a>.",
+      user: "",
+    },
+    {
+      name: "OpenRouter",
+      avatar: "🌐",
+      baseUrl: "https://openrouter.ai/api/v1",
+      model: "openai/gpt-4o-mini",
+      keyHint: "Access 100+ models. Get free key from <a href='https://openrouter.ai/keys' target='_blank' style='color:#c4b5fd;text-decoration:underline;'>openrouter.ai/keys</a>.",
+      user: "",
+    },
+    {
+      name: "Google Gemini",
+      avatar: "✨",
+      baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
+      model: "gemini-2.5-pro",
+      keyHint: "Get key from <a href='https://aistudio.google.com/app/apikey' target='_blank' style='color:#c4b5fd;text-decoration:underline;'>aistudio.google.com/app/apikey</a>. Uses Gemini OpenAI-compatibility endpoint.",
+      user: "",
+    },
+    {
+      name: "OpenAI",
+      avatar: "🟢",
+      baseUrl: "https://api.openai.com/v1",
+      model: "gpt-4o-mini",
+      keyHint: "Get key from <a href='https://platform.openai.com/api-keys' target='_blank' style='color:#c4b5fd;text-decoration:underline;'>platform.openai.com/api-keys</a> (starts with sk-proj-...). Requires active billing credit.",
+      user: "",
+    },
+    {
+      name: "DeepSeek",
+      avatar: "🐋",
+      baseUrl: "https://api.deepseek.com/v1",
+      model: "deepseek-chat",
+      keyHint: "Get key from <a href='https://platform.deepseek.com/api_keys' target='_blank' style='color:#c4b5fd;text-decoration:underline;'>platform.deepseek.com/api_keys</a>.",
+      user: "",
+    },
+    {
+      name: "Ollama (local)",
+      avatar: "🦙",
+      baseUrl: "http://localhost:11434/v1",
+      model: "llama3.3",
+      keyHint: "100% Free & Offline. No key needed (enter 'ollama'). Run `ollama run llama3.3` locally.",
+      user: "",
+    },
+    {
+      name: "LM Studio (local)",
+      avatar: "💻",
+      baseUrl: "http://localhost:1234/v1",
+      model: "<model loaded in LM Studio>",
+      keyHint: "100% Free & Offline. No key needed. Start server from LM Studio Developer tab.",
+      user: "",
+    },
+  ];
+
+  const btnKeyHelp = document.getElementById("key-help-btn");
+  const providerHelpModal = document.getElementById("provider-help-modal");
+  const providerHelpClose = document.getElementById("provider-help-close");
+  const providerHelpList = document.getElementById("provider-help-list");
+
+  function renderProviderHelpList() {
+    providerHelpList.innerHTML = PROVIDERS.map((p, i) => `
+      <div class="provider-card">
+        <div class="provider-card-head">
+          <span class="agent-avatar">${p.avatar}</span>
+          <span class="provider-card-name">${escapeHtml(p.name)}</span>
+        </div>
+        <div class="provider-field"><b>Base URL:</b> <code>${escapeHtml(p.baseUrl)}</code></div>
+        <div class="provider-field"><b>Model:</b> <code>${escapeHtml(p.model)}</code></div>
+        <div class="provider-hint">${escapeHtml(p.keyHint)}</div>
+        <button type="button" class="glass-btn violet use-provider-btn provider-use-btn" data-idx="${i}">Use these</button>
+      </div>
+    `).join("");
+    providerHelpList.querySelectorAll(".use-provider-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const p = PROVIDERS[parseInt(btn.getAttribute("data-idx"), 10)];
+        keyBaseUrl.value = p.baseUrl;
+        keyModel.value = p.model.startsWith("<") ? "" : p.model;
+        closeModal(providerHelpModal);
+        keyToken.focus();
+      });
+    });
+  }
+
+  btnKeyHelp.addEventListener("click", () => { renderProviderHelpList(); openModal(providerHelpModal); });
+  providerHelpClose.addEventListener("click", () => closeModal(providerHelpModal));
+
+  function updateKeyButtonState() {
+    btnKey.classList.toggle("warn", !getLlmToken());
+    updateStepper();
+  }
+  updateKeyButtonState();
+
+  function updateAgentsButtonState() {
+    btnAgents.classList.toggle("active", selected.length > 0);
+    updateStepper();
+  }
+
+  btnReset.addEventListener("click", handleRestart);
+  btnCopy.addEventListener("click", () => {
+    const lines = history.map((m) => `${m.sender}: ${m.text}`);
+    if (prd) lines.push(`\n--- PRD ---\n${prd}`);
+    const blob = new Blob([lines.join("\n\n")], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "transcript.txt";
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  let discussionAborted = false;
+
+  function handleRestart() {
+    discussionAborted = true;
+    discussionStarted = false;
+    status = "idle";
+    history = [];
+    prd = null;
+    topic = "";
+    selected = [];
+    startError.textContent = "";
+    topicInput.value = "";
+    agentSearch.value = "";
+    renderSelectedChips();
+    updateAgentsButtonState();
+    updateStepper();
+    startScreen.style.display = "flex";
+    discussionScreen.style.display = "none";
+    resetVisualizeState();
+  }
+
+  topicInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleStartDiscussion();
+    }
+  });
+  topicInput.addEventListener("input", updateStepper);
+
+  btnStart.addEventListener("click", handleStartDiscussion);
+
+  async function handleStartDiscussion() {
+    topic = topicInput.value;
+    startError.textContent = "";
+    const llmToken = getLlmToken();
+    if (!llmToken) {
+      startError.textContent = "Please set your LLM key first.";
+      keyToken.value = ""; keyBaseUrl.value = getLlmBaseUrl(); keyModel.value = getLlmModel();
+      openModal(keyModal);
+      return;
+    }
+    if (selected.length < 2) {
+      startError.textContent = "Please select at least 2 agents.";
+      renderAgentList();
+      openModal(agentModal);
+      return;
+    }
+    if (!topic.trim()) {
+      startError.textContent = "Please enter a topic to start the discussion.";
+      return;
+    }
+
+    discussionAborted = false;
+    discussionStarted = true;
+    status = "in_progress";
+    history = [];
+    prd = null;
+    startScreen.style.display = "none";
+    discussionScreen.style.display = "block";
+    topicPill.textContent = topic;
+    modelTag.textContent = "Model: " + (getLlmModel() || "default");
+    btnVisualize.style.display = "none";
+    discussionError.textContent = "";
+    renderMessages();
+
+    await runOrchestrationChain([]);
+  }
+
+  async function runOrchestrationChain(historySoFar) {
+    if (discussionAborted) return;
+    const llmToken = getLlmToken();
+    if (!llmToken) {
+      discussionError.textContent = "Please set your LLM key first.";
+      openModal(keyModal);
+      status = "idle";
+      return;
+    }
+    renderMessages(true); // show a "thinking" indicator while we wait for the next turn
+    try {
+      const res = await fetch(API_BASE + "/orchestrate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic,
+          agent_ids: selected,
+          history: historySoFar,
+          llm_token: llmToken,
+          llm_base_url: getLlmBaseUrl() || undefined,
+          llm_model: getLlmModel() || undefined,
+          llm_user: getLlmUser() || undefined,
+        }),
+      });
+      if (discussionAborted) return;
+      const data = await res.json();
+      if (data.error) {
+        showDiscussionError(data.error, () => runOrchestrationChain(historySoFar));
+        status = "idle";
+        renderMessages();
+        return;
+      }
+      history = data.history || [];
+      status = data.status;
+      renderMessages();
+      if (status === "concluded") {
+        prd = data.prd || null;
+        renderMessages();
+        return;
+      }
+      await runOrchestrationChain(history);
+    } catch (e) {
+      if (discussionAborted) return;
+      showDiscussionError("Failed to continue discussion.", () => runOrchestrationChain(historySoFar));
+      status = "idle";
+      renderMessages();
+    }
+  }
+
+  function showDiscussionError(msg, retryFn) {
+    discussionError.textContent = msg + " ";
+    const retry = document.createElement("button");
+    retry.className = "retry-btn";
+    retry.textContent = "Retry";
+    retry.addEventListener("click", () => { discussionError.textContent = ""; retryFn(); });
+    discussionError.appendChild(retry);
+  }
+
+  function renderMessages(showTyping) {
+    const allMessages = history.slice();
+
+    messagesEl.innerHTML = allMessages
+      .map((msg) => {
+        const agent = agents.find((a) => a.id === msg.sender || a.name === msg.sender);
+        const label = agent ? agent.role : msg.sender;
+        const accent = accentFor(msg.sender);
+        return `
+          <div class="message" style="--accent:${accent};">
+            <span class="msg-avatar">${AVATAR_ICON}</span>
+            <div style="min-width:0;">
+              <div class="msg-sender">${escapeHtml(label)}</div>
+              <div class="msg-bubble">${renderMarkdown(msg.text || "")}</div>
+            </div>
+          </div>`;
+      })
+      .join("");
+    if (showTyping) {
+      messagesEl.insertAdjacentHTML("beforeend", `
+        <div class="message">
+          <span class="msg-avatar">${AVATAR_ICON}</span>
+          <div class="msg-bubble typing">An expert is responding\u2026</div>
+        </div>`);
+    }
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+
+    const ready = status === "concluded" && !!prd;
+    btnVisualize.style.display = ready ? "inline-flex" : "none";
+    btnViewPrd.style.display = ready ? "inline-flex" : "none";
+    statusText.classList.toggle("busy", status === "in_progress" || status === "finalizing");
+    statusText.textContent =
+      status === "finalizing" ? "All agents have spoken. Writing the PRD..." :
+      status === "in_progress" ? "Discussion in progress..." : "";
+  }
+
+  // ---- Visualize ----
+  function resetVisualizeState() {
+    visualizeHtmlResult = null;
+    if (visualizeIframe) { visualizeIframe.remove(); visualizeIframe = null; }
+    visualizeDownload.style.display = "none";
+    closeModal(visualizeModal);
+    stopLoadingStepRotation();
+  }
+
+  function startLoadingStepRotation() {
+    let i = 0;
+    loadingStepEl.textContent = loadingSteps[0];
+    loadingStepTimer = setInterval(() => {
+      i = (i + 1) % loadingSteps.length;
+      loadingStepEl.textContent = loadingSteps[i];
+    }, 2200);
+  }
+  function stopLoadingStepRotation() {
+    if (loadingStepTimer) { clearInterval(loadingStepTimer); loadingStepTimer = null; }
+  }
+
+  btnVisualize.addEventListener("click", () => {
+    openModal(visualizeModal);
+    if (visualizeHtmlResult) {
+      showVisualizeResult(visualizeHtmlResult);
+      return;
+    }
+    generateVisualization();
+  });
+  visualizeClose.addEventListener("click", () => closeModal(visualizeModal));
+  visualizeRegenerate.addEventListener("click", () => generateVisualization());
+  visualizeDownload.addEventListener("click", () => {
+    if (!visualizeHtmlResult) return;
+    const blob = new Blob([visualizeHtmlResult], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "prototype.html";
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  function showLoading() {
+    visualizeDownload.style.display = "none";
+    if (visualizeIframe) { visualizeIframe.remove(); visualizeIframe = null; }
+    visualizeLoading.style.display = "flex";
+    resetCodeStream();
+    startLoadingStepRotation();
+  }
+
+  function showVisualizeResult(html) {
+    stopLoadingStepRotation();
+    visualizeLoading.style.display = "none";
+    resetCodeStream();
+    if (visualizeIframe) visualizeIframe.remove();
+    visualizeIframe = document.createElement("iframe");
+    visualizeIframe.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals");
+    visualizeIframe.srcdoc = html;
+    visualizeBody.appendChild(visualizeIframe);
+
+    visualizeDownload.style.display = "inline-flex";
+  }
+
+  function extractHtml(raw) {
+    if (!raw) return "";
+    let text = raw.trim();
+    const match = text.match(/```(?:html)?\s*([\s\S]*?)(?:```|$)/i);
+    if (match && match[1]) {
+      text = match[1].trim();
+    }
+    // Auto-repair truncated HTML if LLM hit output token limit
+    if (!text.toLowerCase().includes("</html>")) {
+      text += "\n</div></div></body></html>";
+    }
+    return text;
+  }
+
+  function showVisualizeError(msg) {
+    stopLoadingStepRotation();
+    visualizeLoading.style.display = "none";
+    resetCodeStream();
+    if (visualizeIframe) { visualizeIframe.remove(); visualizeIframe = null; }
+    const existing = visualizeBody.querySelector(".visualize-error");
+    if (existing) existing.remove();
+    const div = document.createElement("div");
+    div.className = "visualize-error";
+    div.textContent = msg + " ";
+    const retry = document.createElement("button");
+    retry.className = "retry-btn";
+    retry.textContent = "Retry";
+    retry.addEventListener("click", generateVisualization);
+    div.appendChild(retry);
+    visualizeBody.appendChild(div);
+  }
+
+  async function generateVisualization() {
+    const llmToken = getLlmToken();
+    if (!llmToken) {
+      openModal(keyModal);
+      return;
+    }
+    const existingError = visualizeBody.querySelector(".visualize-error");
+    if (existingError) existingError.remove();
+    if (visualizeIframe) { visualizeIframe.remove(); visualizeIframe = null; }
+    visualizeLoading.style.display = "flex";
+    showLoading();
+
+    try {
+      const res = await fetch(API_BASE + "/visualize/stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic, history, prd,
+          llm_token: llmToken,
+          llm_base_url: getLlmBaseUrl() || undefined,
+          llm_model: getLlmModel() || undefined,
+          llm_user: getLlmUser() || undefined,
+        }),
+      });
+
+      if (!res.body || !res.ok) {
+        const data = await res.json().catch(() => null);
+        showVisualizeError((data && data.error) || "Failed to generate the preview.");
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let fullText = "";
+      let buffer = "";
+      let done = false;
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        if (value) {
+          buffer += decoder.decode(value, { stream: !done });
+          const parts = buffer.split("\n");
+          buffer = parts.pop() || "";
+          for (let rawLine of parts) {
+            const line = rawLine.trim();
+            if (!line.startsWith("data:")) continue;
+            const payloadStr = line.replace(/^data:\s*/, "").trim();
+            if (!payloadStr || payloadStr === "[DONE]") continue;
+            try {
+              const parsed = JSON.parse(payloadStr);
+              const delta =
+                (parsed.choices && parsed.choices[0] && (
+                  (parsed.choices[0].delta && parsed.choices[0].delta.content) ||
+                  (parsed.choices[0].message && parsed.choices[0].message.content) ||
+                  parsed.choices[0].text ||
+                  (typeof parsed.choices[0] === "string" ? parsed.choices[0] : "")
+                )) || "";
+              if (delta) {
+                fullText += delta;
+                appendCodeStream(fullText);
+              }
+            } catch (err) {
+              // Ignore incomplete JSON chunks until buffer completes
+            }
+          }
+        }
+      }
+
+      // Flush any remaining buffer line
+      if (buffer.trim().startsWith("data:")) {
+        const payloadStr = buffer.trim().replace(/^data:\s*/, "").trim();
+        if (payloadStr && payloadStr !== "[DONE]") {
+          try {
+            const parsed = JSON.parse(payloadStr);
+            const delta =
+              (parsed.choices && parsed.choices[0] && (
+                (parsed.choices[0].delta && parsed.choices[0].delta.content) ||
+                (parsed.choices[0].message && parsed.choices[0].message.content)
+              )) || "";
+            if (delta) fullText += delta;
+          } catch (e) {}
+        }
+      }
+
+      if (!fullText.trim()) {
+        showVisualizeError("No preview was generated.");
+      } else {
+        visualizeHtmlResult = extractHtml(fullText);
+        showVisualizeResult(visualizeHtmlResult);
+      }
+    } catch (e) {
+      console.error("[Visualize Error]", e);
+      showVisualizeError("Failed to generate the preview: " + (e.message || e));
+    }
+  }
+})();
+</script>
+</body>
+</html>
