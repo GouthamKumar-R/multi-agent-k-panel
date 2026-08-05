@@ -58,6 +58,9 @@ through the system, so you can read it top-to-bottom like a story:
 # ============================================================================
 
 import os
+import json
+import time
+import asyncio
 import yaml
 import requests
 import httpx
@@ -289,9 +292,18 @@ DEFAULT_LLM_MODEL = "gpt-5.2"
 # has to synthesize the whole discussion into a structured document; the
 # website-generation ("visualize") call needs the largest budget since it must
 # output a full HTML document.
-AGENT_MAX_TOKENS = 1000
-PRD_MAX_TOKENS = 4096
-VISUALIZE_MAX_TOKENS = 4096
+AGENT_MAX_TOKENS = 2048
+PRD_MAX_TOKENS = 10000
+# Keep visualization output budget provider-friendly. Very large values (e.g. 100k)
+# are rejected by many OpenAI-compatible providers.
+VISUALIZE_MAX_TOKENS = PRD_MAX_TOKENS
+# Guardrail for very large PRDs to avoid context-window overflow on smaller models.
+VISUALIZE_MAX_PRD_CHARS = 18000
+
+# LLM provider rate-limit handling. Keeps transient 429 spikes from failing flows.
+LLM_RETRY_MAX_ATTEMPTS = 4
+LLM_RETRY_BASE_SECONDS = 1.5
+LLM_RETRY_MAX_SECONDS = 12.0
 
 
 def resolve_llm_url(llm_base_url: Optional[str]) -> str:
@@ -314,6 +326,51 @@ def describe_http_error(e: Exception, resp: Optional[requests.Response] = None) 
         if body:
             return f"Error: {str(e)} — {body[:500]}"
     return f"Error: {str(e)}"
+
+
+def parse_retry_after_seconds(retry_after: Optional[str]) -> Optional[float]:
+    if not retry_after:
+        return None
+    try:
+        delay = float(retry_after.strip())
+        if delay >= 0:
+            return delay
+    except Exception:
+        return None
+    return None
+
+
+def retry_delay_seconds(attempt_index: int, retry_after: Optional[str] = None) -> float:
+    hinted = parse_retry_after_seconds(retry_after)
+    if hinted is not None:
+        return min(max(hinted, 0.0), LLM_RETRY_MAX_SECONDS)
+    backoff = LLM_RETRY_BASE_SECONDS * (2 ** attempt_index)
+    return min(backoff, LLM_RETRY_MAX_SECONDS)
+
+
+def llm_post_with_retries(url: str, payload: dict, headers: dict, timeout: int) -> requests.Response:
+    for attempt in range(LLM_RETRY_MAX_ATTEMPTS):
+        try:
+            resp = requests.post(
+                url,
+                json=payload,
+                timeout=timeout,
+                verify=False,
+                headers=headers,
+            )
+        except requests.RequestException as exc:
+            # Fail fast for non-HTTP transport errors to keep UX snappy.
+            raise exc
+
+        if resp.status_code != 429:
+            resp.raise_for_status()
+            return resp
+
+        if attempt == LLM_RETRY_MAX_ATTEMPTS - 1:
+            resp.raise_for_status()
+        time.sleep(retry_delay_seconds(attempt, resp.headers.get("Retry-After")))
+
+    raise RuntimeError("LLM request failed after retries")
 
 
 def print_llm_log(persona, system_prompt, user_message, history, endpoint, extra=None):
@@ -387,17 +444,19 @@ async def call_agent_llm(
         headers = {}
         if llm_token:
             headers["Authorization"] = f"Bearer {llm_token}"
-        resp = requests.post(
+        resp = llm_post_with_retries(
             resolve_llm_url(llm_base_url),
-            json=payload,
+            payload,
+            headers,
             timeout=30,
-            verify=False,
-            headers=headers,
         )
-        resp.raise_for_status()
         llm_data = resp.json()
         if "choices" in llm_data and llm_data["choices"]:
-            return llm_data["choices"][0].get("message", {}).get("content", "")
+            choice = llm_data["choices"][0]
+            content = choice.get("message", {}).get("content", "")
+            if choice.get("finish_reason") == "length":
+                content += " \u26a0\ufe0f *(response truncated — token limit reached)*"
+            return content
         elif "response" in llm_data:
             return llm_data["response"]
         return str(llm_data)
@@ -528,14 +587,12 @@ async def orchestrate_endpoint(request: Request):
             headers = {}
             if llm_token:
                 headers["Authorization"] = f"Bearer {llm_token}"
-            resp = requests.post(
+            resp = llm_post_with_retries(
                 resolve_llm_url(llm_base_url),
-                json=payload,
+                payload,
+                headers,
                 timeout=60,
-                verify=False,
-                headers=headers,
             )
-            resp.raise_for_status()
             llm_data = resp.json()
             if "choices" in llm_data and llm_data["choices"]:
                 prd = llm_data["choices"][0].get("message", {}).get("content", "")
@@ -640,14 +697,33 @@ async def chat_endpoint(request: Request):
 
         async def stream_llm():
             async with httpx.AsyncClient(timeout=60, verify=False) as client:
-                async with client.stream(
-                    "POST",
-                    resolve_llm_url(llm_base_url),
-                    json=payload,
-                    headers=headers,
-                ) as resp:
-                    async for chunk in resp.aiter_text():
-                        yield chunk
+                for attempt in range(LLM_RETRY_MAX_ATTEMPTS):
+                    async with client.stream(
+                        "POST",
+                        resolve_llm_url(llm_base_url),
+                        json=payload,
+                        headers=headers,
+                    ) as resp:
+                        if resp.status_code == 429 and attempt < LLM_RETRY_MAX_ATTEMPTS - 1:
+                            await resp.aread()
+                            await asyncio.sleep(
+                                retry_delay_seconds(attempt, resp.headers.get("Retry-After"))
+                            )
+                            continue
+                        if resp.status_code >= 400:
+                            body = await resp.aread()
+                            try:
+                                body_text = body.decode("utf-8", errors="replace")
+                            except Exception:
+                                body_text = str(body)
+                            err = {
+                                "error": f"LLM API error ({resp.status_code}): {body_text[:800]}"
+                            }
+                            yield f"data: {json.dumps(err)}\n\n"
+                            return
+                        async for chunk in resp.aiter_text():
+                            yield chunk
+                        return
 
         return StreamingResponse(stream_llm(), media_type="text/event-stream")
 
@@ -656,14 +732,12 @@ async def chat_endpoint(request: Request):
         headers = {}
         if llm_token:
             headers["Authorization"] = f"Bearer {llm_token}"
-        resp = requests.post(
+        resp = llm_post_with_retries(
             resolve_llm_url(llm_base_url),
-            json=payload,
+            payload,
+            headers,
             timeout=30,
-            verify=False,
-            headers=headers,
         )
-        resp.raise_for_status()
         llm_data = resp.json()
         if "choices" in llm_data and llm_data["choices"]:
             reply = llm_data["choices"][0].get("message", {}).get("content", "")
@@ -737,6 +811,13 @@ async def visualize_stream_endpoint(request: Request):
             [f"**{speaker_label(m.get('sender', ''))}:**\n{m.get('text', '')}" for m in history]
         )
 
+    # Provider compatibility guardrail: keep the visualize input bounded.
+    if len(prd) > VISUALIZE_MAX_PRD_CHARS:
+        prd = (
+            prd[:VISUALIZE_MAX_PRD_CHARS]
+            + "\n\n[Note: PRD was truncated by the server to fit provider context limits.]"
+        )
+
     # --- Step 2: build the synthesis prompt ---
     # This single prompt does two jobs internally: (a) silently draft a
     # product brief from the PRD, then (b) turn that brief into a finished
@@ -753,13 +834,18 @@ async def visualize_stream_endpoint(request: Request):
         "inventing generic content.\n\n"
         "Using the PRD as your brief, generate a single, long-form, visually stunning, self-contained "
         "HTML page prototype.\n\n"
-        "- Requirements for your final output:\n"
+        "Requirements for your final output:\n"
         "- Output ONLY the raw HTML (no explanations, no markdown code fences, no commentary).\n"
         "- The HTML must be a complete document (<!DOCTYPE html> ... </html>).\n"
-        "- Include Tailwind CSS CDN in <head>: `<script src=\"https://cdn.tailwindcss.com\"></script>` for modern responsive layout, gradients, glassmorphism, and styling.\n"
-        "- Include FontAwesome icon library in <head>: `<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css\">` for crisp, modern icons.\n"
-        "- Include Google Fonts (e.g. Inter / Plus Jakarta Sans) for high-end typography.\n"
-        "- Incorporate rich visual aesthetics: dynamic dark/light themes, subtle glassmorphism (`backdrop-blur-md bg-white/10` or `bg-slate-900/80`), vibrant gradient accents, micro-animations, card hover effects, and responsive grid layouts.\n"
+        "- You MUST include these exact libraries via CDN in the generated HTML head:\n"
+        "  - Tailwind CSS: https://cdn.tailwindcss.com\n"
+        "  - Font Awesome 6.5.1: https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css\n"
+        "  - Google Fonts: Inter and Plus Jakarta Sans\n"
+        "- Use inline <style> for custom CSS enhancements in addition to Tailwind utilities (no build tools).\n"
+        "- If any interactivity, animation, or UI polish benefits from a JS library (e.g. carousels, "
+        "scroll animations, charts), you may include it ONLY via a free, open-source CDN script tag "
+        "(e.g. unpkg.com, cdnjs.com, jsdelivr.net) — never invent fake URLs and never use paid/licensed "
+        "libraries.\n"
         "- For any images/photos, ONLY use royalty-free sources that work without an API key. Prefer "
         "topic-relevant keyword-based photos via https://source.unsplash.com/featured/?<comma,separated,keywords> "
         "(e.g. https://source.unsplash.com/featured/?coffee,shop for a cafe hero image) so images actually "
@@ -786,9 +872,12 @@ async def visualize_stream_endpoint(request: Request):
         "  11. A detailed footer with multiple link columns, social icons, and a copyright line.\n"
         "- Every section must contain real, specific, on-topic mock data tailored to the PRD — never "
         "generic filler text.\n"
-        "- Make it modern, responsive, and visually polished: strong typography hierarchy, generous "
-        "whitespace, a cohesive color palette, gradients, subtle shadows, hover states, and tasteful "
-        "CSS animations/transitions.\n"
+        f"- You have a strict output budget of approximately {VISUALIZE_MAX_TOKENS} tokens. Plan the page "
+        "so it is fully complete within that budget: keep prose concise, avoid redundant markup, and "
+        "always return a valid, finished HTML document (never partial/truncated output).\n"
+        "- Visual style requirements: modern glassmorphism, layered gradients, soft backdrop blur, card hover "
+        "effects, subtle shadows, and tasteful CSS animations/transitions.\n"
+        "- Typography requirements: Inter and Plus Jakarta Sans with clear hierarchy and strong readability.\n"
         "- Use semantic HTML5 elements and ensure the layout is responsive (flexbox/grid + media queries)."
     )
     user_message = (
@@ -824,19 +913,34 @@ async def visualize_stream_endpoint(request: Request):
         headers["Authorization"] = f"Bearer {llm_token}"
 
     async def stream_llm():
-        async with httpx.AsyncClient(timeout=300.0, verify=False) as client:
-            async with client.stream(
-                "POST",
-                resolve_llm_url(llm_base_url),
-                json=payload,
-                headers=headers,
-            ) as resp:
-                if resp.status_code >= 400:
-                    error_text = await resp.aread()
-                    yield f"Error ({resp.status_code}): {error_text.decode('utf-8', errors='ignore')[:500]}"
+        async with httpx.AsyncClient(timeout=120, verify=False) as client:
+            for attempt in range(LLM_RETRY_MAX_ATTEMPTS):
+                async with client.stream(
+                    "POST",
+                    resolve_llm_url(llm_base_url),
+                    json=payload,
+                    headers=headers,
+                ) as resp:
+                    if resp.status_code == 429 and attempt < LLM_RETRY_MAX_ATTEMPTS - 1:
+                        await resp.aread()
+                        await asyncio.sleep(
+                            retry_delay_seconds(attempt, resp.headers.get("Retry-After"))
+                        )
+                        continue
+                    if resp.status_code >= 400:
+                        body = await resp.aread()
+                        try:
+                            body_text = body.decode("utf-8", errors="replace")
+                        except Exception:
+                            body_text = str(body)
+                        err = {
+                            "error": f"LLM API error ({resp.status_code}): {body_text[:800]}"
+                        }
+                        yield f"data: {json.dumps(err)}\n\n"
+                        return
+                    async for chunk in resp.aiter_text():
+                        yield chunk
                     return
-                async for chunk in resp.aiter_text():
-                    yield chunk
 
     return StreamingResponse(stream_llm(), media_type="text/event-stream")
 

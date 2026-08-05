@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>K-Panel Setup · 5-Step Guide</title>
+  <noscript>
+    <style>
+      .step-panel[hidden] { display: block !important; }
+      .step-nav, .step-connector { display: none !important; }
+      .step-panel { margin-top: 16px; }
+    </style>
+  </noscript>
+  <style>
+    :root {
+      --bg: #070b16;
+      --surface: #0d1424;
+      --raised: #121c31;
+      --line: rgba(123,151,210,.22);
+      --text: #edf4ff;
+      --muted: #98a8c5;
+      --cyan: #45d9ff;
+      --violet: #9a7cff;
+      --green: #58e6a9;
+      --amber: #ffc66d;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 14% 0%, rgba(69,217,255,.13), transparent 31rem),
+        radial-gradient(circle at 91% 10%, rgba(154,124,255,.13), transparent 29rem),
+        linear-gradient(rgba(69,217,255,.026) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(69,217,255,.026) 1px, transparent 1px),
+        var(--bg);
+      background-size: auto, auto, 32px 32px, 32px 32px, auto;
+      font: 16px/1.58 Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+    }
+    main { width: min(1180px, calc(100% - 32px)); margin: 14px auto 40px; }
+    h1 { margin: 4px 0 10px; font-size: clamp(2.2rem,5vw,4rem); line-height: 1.02; letter-spacing: -.045em; }
+    h2 { margin: 4px 0 12px; font-size: clamp(1.45rem,3vw,2.15rem); }
+    h3 { margin: 0 0 8px; font-size: 1rem; }
+    p { margin: 8px 0; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .hero, .step-panel {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(13,20,36,.94);
+      box-shadow: 0 14px 38px rgba(0,0,0,.34);
+    }
+    .hero { padding: 14px; }
+    .brand-bar {
+      display: grid;
+      grid-template-columns: minmax(110px, 160px) 1fr minmax(110px, 160px);
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 12px;
+      padding: 2px 6px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand-logo { display: block; width: 100%; max-height: 34px; object-fit: contain; }
+    .brand-logo.right { justify-self: end; }
+    .brand-copy { min-width: 0; text-align: center; }
+    .brand-copy h1 { margin: 0; font-size: clamp(1.15rem, 2.2vw, 1.7rem); letter-spacing: -.025em; }
+    .brand-copy p { margin: 2px 0 0; color: var(--muted); font-size: .78rem; }
+    .eyebrow {
+      color: var(--cyan);
+      font-size: .76rem;
+      font-weight: 850;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+    .subtitle { max-width: 820px; color: var(--muted); font-size: 1.08rem; }
+    .summary {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-left: 4px solid var(--violet);
+      border-radius: 0 11px 11px 0;
+      background: rgba(154,124,255,.07);
+    }
+    a { color: var(--cyan); }
+    .step-nav {
+      display: grid;
+      grid-template-columns: repeat(5,minmax(0,1fr));
+      gap: 10px;
+      margin-top: 0;
+    }
+    .step-trigger {
+      display: flex;
+      min-width: 0;
+      min-height: 94px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 5px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      color: var(--text);
+      background: var(--raised);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color .2s, transform .2s, background .2s;
+    }
+    .step-trigger:hover { transform: translateY(-2px); border-color: rgba(69,217,255,.42); }
+    .step-trigger:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+    .step-trigger.is-active {
+      border-color: var(--cyan);
+      background: rgba(69,217,255,.07);
+      box-shadow: 0 0 22px rgba(69,217,255,.13);
+    }
+    .step-index { color: var(--violet); font-size: .72rem; font-weight: 850; letter-spacing: .09em; }
+    .step-trigger strong { font-size: .95rem; }
+    .step-trigger span:last-child { color: var(--muted); font-size: .8rem; line-height: 1.35; }
+    .step-connector {
+      height: 2px;
+      margin: -5px 10% 0;
+      background: linear-gradient(90deg,transparent,var(--cyan) 24%,var(--violet) 76%,transparent);
+    }
+    .panel-area { margin-top: 14px; }
+    .step-panel { padding: 22px; }
+    .intro { max-width: 850px; color: var(--muted); }
+    .grid { display: grid; grid-template-columns: minmax(0,1.35fr) minmax(260px,.65fr); gap: 16px; margin-top: 20px; }
+    .command, .notes, .success, .troubleshoot {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: var(--raised);
+    }
+    .label { margin-bottom: 9px; color: var(--cyan); font-size: .72rem; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
+    pre { margin: 0; overflow-x: auto; color: #dff8ff; font-size: .86rem; line-height: 1.72; }
+    ul, ol { margin: 8px 0 0; padding-left: 20px; }
+    li { margin: 6px 0; }
+    .callouts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+    .provider-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; margin-top: 18px; }
+    .provider-card {
+      position: relative;
+      min-width: 0;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: linear-gradient(145deg,rgba(18,28,49,.98),rgba(11,18,33,.98));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+    }
+    .provider-card.recommended { border-color: rgba(88,230,169,.45); box-shadow: 0 0 22px rgba(88,230,169,.07); }
+    .provider-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 13px; }
+    .provider-name { font-size: 1rem; font-weight: 850; }
+    .provider-badge {
+      padding: 3px 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: .64rem;
+      font-weight: 800;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+    .provider-card.recommended .provider-badge { border-color: rgba(88,230,169,.4); color: var(--green); }
+    .provider-field { margin-top: 10px; }
+    .provider-field span { display: block; margin-bottom: 3px; color: var(--muted); font-size: .66rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .provider-field code { display: block; overflow-wrap: anywhere; color: #dff8ff; font-size: .74rem; line-height: 1.4; }
+    .provider-link { display: inline-flex; margin-top: 12px; font-size: .78rem; font-weight: 750; text-decoration: none; }
+    .provider-link:hover { text-decoration: underline; }
+    .success { border-color: rgba(88,230,169,.31); background: rgba(88,230,169,.07); }
+    .success strong { color: var(--green); }
+    .troubleshoot { border-color: rgba(255,198,109,.31); background: rgba(255,198,109,.07); }
+    .troubleshoot strong { color: var(--amber); }
+    .noscript-fallback { margin: 16px; padding: 16px; color: var(--muted); background: var(--raised); }
+    footer { margin-top: 22px; color: var(--muted); text-align: center; font-size: .84rem; }
+    @media (max-width: 880px) {
+      .step-nav { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .provider-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .grid, .callouts { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 520px) {
+      main { width: calc(100% - 20px); margin-top: 10px; }
+      .hero, .step-panel { padding: 21px; border-radius: 15px; }
+      .brand-bar { grid-template-columns: 90px 1fr 90px; gap: 8px; }
+      .brand-logo { max-height: 24px; }
+      .brand-copy p { display: none; }
+      .step-nav { grid-template-columns: 1fr; }
+      .provider-grid { grid-template-columns: 1fr; }
+      .step-trigger { min-height: auto; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .step-trigger { transition: none; }
+    }
+    @media (forced-colors: active) {
+      body, .hero, .step-panel, .step-trigger, .command, .notes { background: Canvas; color: CanvasText; }
+      .step-trigger.is-active, .step-trigger:focus-visible { border: 2px solid Highlight; }
+    }
+    @media print {
+      body { color: #172033; background: #fff; }
+      main { width: 100%; margin: 0; }
+      .hero, .step-panel { border-color: #dce2eb; background: #fff; box-shadow: none; }
+      .step-nav, .step-connector { display: none !important; }
+      .step-panel { display: block !important; margin-top: 14px; break-inside: avoid; }
+      .grid, .callouts { grid-template-columns: 1fr; }
+      .command, .notes { color: #172033; background: #f7f9fc; }
+      pre { color: #1e4a7a; white-space: pre-wrap; }
+    }
+  </style>
+</head>
+<body>
+<noscript><div class="noscript-fallback">JavaScript is disabled. All five workshop steps are shown below.</div></noscript>
+<main>
+  <header class="hero">
+    <div class="brand-bar">
+      <img class="brand-logo" src="assets/netapp_logo.png" alt="NetApp">
+      <div class="brand-copy">
+        <h1>K-Panel Multi-Agent AI Workshop</h1>
+        <p>Nasscom Future Forge 2026 · Participant Quick Start</p>
+      </div>
+      <img class="brand-logo right" src="assets/nasscom_white_logo.png" alt="nasscom">
+    </div>
+    <nav class="step-nav" aria-label="K-Panel setup steps">
+      <button class="step-trigger is-active" type="button" data-step="1" aria-controls="panel-step-1" aria-expanded="true"><span class="step-index">01</span><strong>Get ready</strong><span>Files, Python, internet.</span></button>
+      <button class="step-trigger" type="button" data-step="2" aria-controls="panel-step-2" aria-expanded="false"><span class="step-index">02</span><strong>Launch K-Panel</strong><span>Run the OS launcher.</span></button>
+      <button class="step-trigger" type="button" data-step="3" aria-controls="panel-step-3" aria-expanded="false"><span class="step-index">03</span><strong>Configure LLM</strong><span>Key, base URL, model.</span></button>
+      <button class="step-trigger" type="button" data-step="4" aria-controls="panel-step-4" aria-expanded="false"><span class="step-index">04</span><strong>Run the panel</strong><span>Agents, topic, PRD.</span></button>
+      <button class="step-trigger" type="button" data-step="5" aria-controls="panel-step-5" aria-expanded="false"><span class="step-index">05</span><strong>Create &amp; visualize</strong><span>Custom agent and prototype.</span></button>
+    </nav>
+  </header>
+
+  <div class="step-connector" aria-hidden="true"></div>
+  <div class="panel-area">
+    <section class="step-panel is-active" id="panel-step-1" data-panel="1" aria-labelledby="title-step-1">
+      <div class="eyebrow">Step 01 · Participant readiness</div>
+      <h2 id="title-step-1">Get the workshop files and prerequisites</h2>
+      <p class="intro">Download or extract the repository, confirm Python 3.9+, and use an internet-connected machine.</p>
+      <div class="grid">
+        <div class="command"><div class="label">Clone or enter the supplied folder</div><pre><code>git clone https://tinyurl.com/netappnasscom
+cd multi-agent-k-panel/k-panel
+python3 --version
+
+# If using the supplied ZIP:
+cd k-panel-netapp-nasscom/k-panel</code></pre></div>
+        <div class="notes"><h3>Required</h3><ul><li>Python 3.9 or newer</li><li>Internet access</li><li>The <code>k-panel</code> folder with launch scripts</li><li>A modern web browser</li></ul></div>
+      </div>
+      <div class="callouts"><div class="success"><strong>Success:</strong> The terminal is inside <code>k-panel</code> and Python reports version 3.9+.</div><div class="troubleshoot"><strong>If blocked:</strong> Re-extract the ZIP or install Python before continuing.</div></div>
+    </section>
+
+    <section class="step-panel" id="panel-step-2" data-panel="2" aria-labelledby="title-step-2" hidden>
+      <div class="eyebrow">Step 02 · Start locally</div>
+      <h2 id="title-step-2">Launch K-Panel for your operating system</h2>
+      <p class="intro">The launcher creates <code>venv</code>, installs <code>requirements.txt</code>, and starts both local services.</p>
+      <div class="grid">
+        <div class="command"><div class="label">Run one platform command</div><pre><code># macOS
+chmod +x start-in-mac.sh
+./start-in-mac.sh
+
+# Linux
+chmod +x start-in-linux.sh
+./start-in-linux.sh
+
+# Windows
+start-in-windows.bat</code></pre></div>
+        <div class="notes"><h3>Open after launch</h3><ul><li>Frontend: <code>http://127.0.0.1:8080/k-panel.html</code></li><li>Backend: <code>http://127.0.0.1:8877</code></li><li>The browser usually opens automatically.</li></ul></div>
+      </div>
+      <div class="callouts"><div class="success"><strong>Success:</strong> The K-Panel page loads and the backend URL responds.</div><div class="troubleshoot"><strong>If blocked:</strong> Check <code>backend.log</code>, <code>static.log</code>, and ports 8877/8080.</div></div>
+    </section>
+
+    <section class="step-panel" id="panel-step-3" data-panel="3" aria-labelledby="title-step-3" hidden>
+      <div class="eyebrow">Step 03 · LLM guide</div>
+      <h2 id="title-step-3">Configure an OpenAI-compatible LLM</h2>
+      <p class="intro">Choose one provider card. In K-Panel, click <strong>Key</strong> and paste its key, Base URL, and Model values.</p>
+      <div class="provider-grid">
+        <article class="provider-card recommended">
+          <div class="provider-head"><div class="provider-name">⚡ GroqCloud</div><span class="provider-badge">Free · Recommended</span></div>
+          <div class="provider-field"><span>Base URL</span><code>https://api.groq.com/openai/v1</code></div>
+          <div class="provider-field"><span>Model</span><code>llama-3.3-70b-versatile</code></div>
+          <a class="provider-link" href="https://console.groq.com/keys">Get Groq key →</a>
+        </article>
+        <article class="provider-card">
+          <div class="provider-head"><div class="provider-name">🌐 OpenRouter</div><span class="provider-badge">100+ models</span></div>
+          <div class="provider-field"><span>Base URL</span><code>https://openrouter.ai/api/v1</code></div>
+          <div class="provider-field"><span>Model</span><code>openai/gpt-4o-mini</code></div>
+          <a class="provider-link" href="https://openrouter.ai/keys">Get OpenRouter key →</a>
+        </article>
+        <article class="provider-card">
+          <div class="provider-head"><div class="provider-name">✨ Google Gemini</div><span class="provider-badge">AI Studio</span></div>
+          <div class="provider-field"><span>Base URL</span><code>https://generativelanguage.googleapis.com/v1beta/openai</code></div>
+          <div class="provider-field"><span>Model</span><code>gemini-2.5-pro</code></div>
+          <a class="provider-link" href="https://aistudio.google.com/app/apikey">Get Gemini key →</a>
+        </article>
+        <article class="provider-card">
+          <div class="provider-head"><div class="provider-name">🟢 OpenAI</div><span class="provider-badge">Paid</span></div>
+          <div class="provider-field"><span>Base URL</span><code>https://api.openai.com/v1</code></div>
+          <div class="provider-field"><span>Model</span><code>gpt-4o-mini</code></div>
+          <a class="provider-link" href="https://platform.openai.com/api-keys">Get OpenAI key →</a>
+        </article>
+        <article class="provider-card">
+          <div class="provider-head"><div class="provider-name">🦙 Local Ollama</div><span class="provider-badge">Offline · Free</span></div>
+          <div class="provider-field"><span>Base URL</span><code>http://localhost:11434/v1</code></div>
+          <div class="provider-field"><span>Model</span><code>llama3.3</code></div>
+          <div class="provider-field"><span>Key</span><code>ollama</code></div>
+        </article>
+      </div>
+      <div class="callouts"><div class="success"><strong>Success:</strong> The Key button shows the connection is saved.</div><div class="troubleshoot"><strong>If blocked:</strong> Recheck the model spelling, base URL, provider quota, and copied key.</div></div>
+    </section>
+
+    <section class="step-panel" id="panel-step-4" data-panel="4" aria-labelledby="title-step-4" hidden>
+      <div class="eyebrow">Step 04 · Workshop activity</div>
+      <h2 id="title-step-4">Run a multi-agent panel discussion</h2>
+      <p class="intro">Choose complementary specialists, give them one concrete product challenge, and let the final turn synthesize their discussion into a PRD.</p>
+      <div class="grid">
+        <div class="command"><div class="label">Participant flow</div><pre><code>1. Select 2–3 agents
+2. Enter a focused discussion topic
+3. Start the discussion
+4. Watch each expert contribute
+5. Review the generated Markdown PRD</code></pre></div>
+        <div class="notes"><h3>Suggested panel</h3><ul><li>Brand Manager</li><li>Copywriter</li><li>Graphic Designer</li><li>Marketing Analyst</li></ul></div>
+      </div>
+      <div class="callouts"><div class="success"><strong>Success:</strong> Every selected agent contributes and K-Panel produces a structured PRD.</div><div class="troubleshoot"><strong>If blocked:</strong> Check the LLM connection in Step 3, then retry the failed turn.</div></div>
+    </section>
+
+    <section class="step-panel" id="panel-step-5" data-panel="5" aria-labelledby="title-step-5" hidden>
+      <div class="eyebrow">Step 05 · Build an artifact</div>
+      <h2 id="title-step-5">Create a custom agent and visualize the PRD</h2>
+      <p class="intro">Extend the panel with a deeptech role, rerun the discussion, then turn its PRD into a live single-page prototype.</p>
+      <div class="grid">
+        <div class="command"><div class="label">Participant flow</div><pre><code>1. Click New Agent
+2. Define name, role, and system prompt
+3. Add the agent to the panel
+4. Complete the discussion
+5. Click Visualize
+6. Download the generated HTML</code></pre></div>
+        <div class="notes"><h3>Deeptech role ideas</h3><ul><li>Identity Infrastructure Lead</li><li>Autonomous Robotics Architect</li><li>AI Safety &amp; Cybersecurity Specialist</li></ul></div>
+      </div>
+      <div class="callouts"><div class="success"><strong>Success:</strong> A custom persona contributes and the PRD becomes a downloadable web prototype.</div><div class="troubleshoot"><strong>If blocked:</strong> Use a capable model with enough output quota and retry visualization.</div></div>
+    </section>
+  </div>
+  <footer>Nasscom Future Forge 2026 · K-Panel participant quick start</footer>
+</main>
+<script>
+const triggers = [...document.querySelectorAll(".step-trigger")];
+const panels = [...document.querySelectorAll(".step-panel")];
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+function activateStep(stepNumber, focusPanel = false) {
+  const key = String(stepNumber);
+  if (!triggers.some((trigger) => trigger.dataset.step === key)) return;
+  triggers.forEach((trigger) => {
+    const active = trigger.dataset.step === key;
+    trigger.classList.toggle("is-active", active);
+    trigger.setAttribute("aria-expanded", String(active));
+  });
+  panels.forEach((panel) => {
+    const active = panel.dataset.panel === key;
+    panel.classList.toggle("is-active", active);
+    panel.hidden = !active;
+  });
+  if (focusPanel) {
+    document.querySelector(`[data-panel="${key}"]`)?.scrollIntoView({
+      behavior: reducedMotion.matches ? "auto" : "smooth",
+      block: "nearest",
+    });
+  }
+}
+
+triggers.forEach((trigger, index) => {
+  trigger.addEventListener("click", () => activateStep(trigger.dataset.step, true));
+  trigger.addEventListener("keydown", (event) => {
+    let nextIndex = null;
+    if (event.key === "ArrowRight") nextIndex = (index + 1) % triggers.length;
+    if (event.key === "ArrowLeft") nextIndex = (index - 1 + triggers.length) % triggers.length;
+    if (event.key === "Home") nextIndex = 0;
+    if (event.key === "End") nextIndex = triggers.length - 1;
+    if (nextIndex === null) return;
+    event.preventDefault();
+    triggers[nextIndex].focus();
+    activateStep(triggers[nextIndex].dataset.step);
+  });
+});
+</script>
+</body>
+</html>
