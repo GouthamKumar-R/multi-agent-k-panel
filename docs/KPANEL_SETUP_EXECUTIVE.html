@@ -60,8 +60,8 @@
       padding: 2px 6px 12px;
       border-bottom: 1px solid var(--line);
     }
-    .brand-logo { display: block; width: 100%; max-height: 34px; object-fit: contain; }
-    .brand-logo.right { justify-self: end; padding: 6px 10px; border-radius: 8px; background: #18324f; }
+    .brand-logo { display: block; width: 100%; max-height: 46px; padding: 6px 10px; border-radius: 8px; background: #18324f; object-fit: contain; }
+    .brand-logo.right { justify-self: end; }
     .brand-copy { min-width: 0; text-align: center; }
     .brand-copy h1 { margin: 0; font-size: clamp(1.15rem, 2.2vw, 1.7rem); letter-spacing: -.025em; }
     .brand-copy p { margin: 2px 0 0; color: var(--muted); font-size: .78rem; }
@@ -129,12 +129,20 @@
       border-radius: 13px;
       background: var(--raised);
     }
-    .command { position: relative; }
-    .command .label { padding-right: 88px; }
+    .command-list { display: grid; gap: 8px; }
+    .platform-label { margin-top: 4px; color: var(--muted); font-size: .72rem; font-weight: 800; }
+    .command-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--surface);
+    }
+    .command-line code { min-width: 0; flex: 1; overflow-x: auto; color: #18324f; font-size: .82rem; white-space: nowrap; }
     .copy-button {
-      position: absolute;
-      top: 11px;
-      right: 11px;
+      flex: none;
       padding: 7px 10px;
       border: 1px solid #b9cce2;
       border-radius: 8px;
@@ -249,10 +257,10 @@
     </div>
     <nav class="step-nav" aria-label="K-Panel setup steps">
       <button class="step-trigger is-active" type="button" data-step="1" aria-controls="panel-step-1" aria-expanded="true"><span class="step-index">01</span><strong>Get ready</strong><span>Files, Python, internet.</span></button>
-      <button class="step-trigger" type="button" data-step="2" aria-controls="panel-step-2" aria-expanded="false"><span class="step-index">02</span><strong>Launch K-Panel</strong><span>Run the OS launcher.</span></button>
+      <button class="step-trigger" type="button" data-step="2" aria-controls="panel-step-2" aria-expanded="false"><span class="step-index">02</span><strong>Launch Blueprint</strong><span>Run the OS launcher.</span></button>
       <button class="step-trigger" type="button" data-step="3" aria-controls="panel-step-3" aria-expanded="false"><span class="step-index">03</span><strong>Configure LLM</strong><span>Key, base URL, model.</span></button>
-      <button class="step-trigger" type="button" data-step="4" aria-controls="panel-step-4" aria-expanded="false"><span class="step-index">04</span><strong>Run the panel</strong><span>Agents, topic, PRD.</span></button>
-      <button class="step-trigger" type="button" data-step="5" aria-controls="panel-step-5" aria-expanded="false"><span class="step-index">05</span><strong>Create &amp; visualize</strong><span>Custom agent and prototype.</span></button>
+      <button class="step-trigger" type="button" data-step="4" aria-controls="panel-step-4" aria-expanded="false"><span class="step-index">04</span><strong>Run &amp; visualize</strong><span>Agents, PRD, prototype.</span></button>
+      <button class="step-trigger" type="button" data-step="5" aria-controls="panel-step-5" aria-expanded="false"><span class="step-index">05</span><strong>Optional persona</strong><span>Create a custom agent.</span></button>
     </nav>
   </header>
 
@@ -263,32 +271,39 @@
       <h2 id="title-step-1">Get the workshop files and prerequisites</h2>
       <p class="intro">Download or extract the repository, confirm Python 3.9+, and use an internet-connected machine.</p>
       <div class="grid">
-        <div class="command"><div class="label">Clone or enter the supplied folder</div><pre><code>git clone https://tinyurl.com/netappnasscom
-cd multi-agent-k-panel/k-panel
-python3 --version
-
-# If using the supplied ZIP:
-cd k-panel-netapp-nasscom/k-panel</code></pre></div>
-        <div class="notes"><h3>Required</h3><ul><li>Python 3.9 or newer</li><li>Internet access</li><li>The <code>k-panel</code> folder with launch scripts</li><li>A modern web browser</li></ul></div>
+        <div class="command">
+          <div class="label">Clone or enter the supplied folder</div>
+          <div class="command-list">
+            <div class="command-line"><code>git clone https://github.com/GouthamKumar-R/multi-agent-k-panel.git</code></div>
+            <div class="command-line"><code>cd multi-agent-k-panel</code></div>
+            <div class="command-line"><code>python3 --version</code></div>
+            <div class="platform-label">If using the supplied ZIP</div>
+            <div class="command-line"><code>cd k-panel-netapp-nasscom/k-panel</code></div>
+          </div>
+        </div>
+        <div class="notes"><h3>Required</h3><ul><li>Python 3.9 or newer</li><li>Internet access</li><li>The repository folder containing the launch scripts</li><li>A modern web browser</li></ul></div>
       </div>
-      <div class="callouts"><div class="success"><strong>Success:</strong> The terminal is inside <code>k-panel</code> and Python reports version 3.9+.</div><div class="troubleshoot"><strong>If blocked:</strong> Re-extract the ZIP or install Python before continuing.</div></div>
+      <div class="callouts"><div class="success"><strong>Success:</strong> The terminal is inside the folder containing the launch scripts and Python reports version 3.9+.</div><div class="troubleshoot"><strong>If blocked:</strong> Re-extract the ZIP or install Python before continuing.</div></div>
     </section>
 
     <section class="step-panel" id="panel-step-2" data-panel="2" aria-labelledby="title-step-2" hidden>
       <div class="eyebrow">Step 02 · Start locally</div>
-      <h2 id="title-step-2">Launch K-Panel for your operating system</h2>
+      <h2 id="title-step-2">Launch Multi-Agent Blueprint from your operating system</h2>
       <p class="intro">The launcher creates <code>venv</code>, installs <code>requirements.txt</code>, and starts both local services.</p>
       <div class="grid">
-        <div class="command"><div class="label">Run one platform command</div><pre><code># macOS
-chmod +x start-in-mac.sh
-./start-in-mac.sh
-
-# Linux
-chmod +x start-in-linux.sh
-./start-in-linux.sh
-
-# Windows
-start-in-windows.bat</code></pre></div>
+        <div class="command">
+          <div class="label">Run commands for your platform</div>
+          <div class="command-list">
+            <div class="platform-label">macOS</div>
+            <div class="command-line"><code>chmod +x start-in-mac.sh</code></div>
+            <div class="command-line"><code>./start-in-mac.sh</code></div>
+            <div class="platform-label">Linux</div>
+            <div class="command-line"><code>chmod +x start-in-linux.sh</code></div>
+            <div class="command-line"><code>./start-in-linux.sh</code></div>
+            <div class="platform-label">Windows</div>
+            <div class="command-line"><code>start-in-windows.bat</code></div>
+          </div>
+        </div>
         <div class="notes"><h3>Open after launch</h3><ul><li>Frontend: <code>http://127.0.0.1:8080/k-panel.html</code></li><li>Backend: <code>http://127.0.0.1:8877</code></li><li>The browser usually opens automatically.</li></ul></div>
       </div>
       <div class="callouts"><div class="success"><strong>Success:</strong> The K-Panel page loads and the backend URL responds.</div><div class="troubleshoot"><strong>If blocked:</strong> Check <code>backend.log</code>, <code>static.log</code>, and ports 8877/8080.</div></div>
@@ -335,33 +350,24 @@ start-in-windows.bat</code></pre></div>
 
     <section class="step-panel" id="panel-step-4" data-panel="4" aria-labelledby="title-step-4" hidden>
       <div class="eyebrow">Step 04 · Workshop activity</div>
-      <h2 id="title-step-4">Run a multi-agent panel discussion</h2>
-      <p class="intro">Choose complementary specialists, give them one concrete product challenge, and let the final turn synthesize their discussion into a PRD.</p>
+      <h2 id="title-step-4">Run the multi-agent panel and visualize the PRD</h2>
+      <p class="intro">Choose complementary specialists, generate a structured PRD from their discussion, then turn it into a live single-page prototype.</p>
       <div class="grid">
-        <div class="command"><div class="label">Participant flow</div><pre><code>1. Select 2–3 agents
-2. Enter a focused discussion topic
-3. Start the discussion
-4. Watch each expert contribute
-5. Review the generated Markdown PRD</code></pre></div>
+        <div class="notes"><div class="label">Participant flow</div><ol><li>Select 2–3 agents.</li><li>Enter a focused discussion topic.</li><li>Start the discussion and watch each expert contribute.</li><li>Review the generated Markdown PRD.</li><li>Click <strong>Visualize</strong>.</li><li>Download the generated HTML prototype.</li></ol></div>
         <div class="notes"><h3>Suggested panel</h3><ul><li>Brand Manager</li><li>Copywriter</li><li>Graphic Designer</li><li>Marketing Analyst</li></ul></div>
       </div>
-      <div class="callouts"><div class="success"><strong>Success:</strong> Every selected agent contributes and K-Panel produces a structured PRD.</div><div class="troubleshoot"><strong>If blocked:</strong> Check the LLM connection in Step 3, then retry the failed turn.</div></div>
+      <div class="callouts"><div class="success"><strong>Success:</strong> Every selected agent contributes, a structured PRD is produced, and its web prototype can be downloaded.</div><div class="troubleshoot"><strong>If blocked:</strong> Check the LLM connection and output quota in Step 3, then retry the failed turn or visualization.</div></div>
     </section>
 
     <section class="step-panel" id="panel-step-5" data-panel="5" aria-labelledby="title-step-5" hidden>
-      <div class="eyebrow">Step 05 · Build an artifact</div>
-      <h2 id="title-step-5">Create a custom agent and visualize the PRD</h2>
-      <p class="intro">Extend the panel with a deeptech role, rerun the discussion, then turn its PRD into a live single-page prototype.</p>
+      <div class="eyebrow">Step 05 · Optional extension</div>
+      <h2 id="title-step-5">Optional: Create a custom persona agent</h2>
+      <p class="intro">If time allows, extend the panel with a reusable deeptech persona tailored to your product challenge.</p>
       <div class="grid">
-        <div class="command"><div class="label">Participant flow</div><pre><code>1. Click New Agent
-2. Define name, role, and system prompt
-3. Add the agent to the panel
-4. Complete the discussion
-5. Click Visualize
-6. Download the generated HTML</code></pre></div>
+        <div class="notes"><div class="label">Optional participant flow</div><ol><li>Click <strong>New Agent</strong>.</li><li>Define its name, role, and system prompt.</li><li>Save the persona.</li><li>Add it to the panel.</li><li>Rerun the discussion if workshop time permits.</li></ol></div>
         <div class="notes"><h3>Deeptech role ideas</h3><ul><li>Identity Infrastructure Lead</li><li>Autonomous Robotics Architect</li><li>AI Safety &amp; Cybersecurity Specialist</li></ul></div>
       </div>
-      <div class="callouts"><div class="success"><strong>Success:</strong> A custom persona contributes and the PRD becomes a downloadable web prototype.</div><div class="troubleshoot"><strong>If blocked:</strong> Use a capable model with enough output quota and retry visualization.</div></div>
+      <div class="callouts"><div class="success"><strong>Success:</strong> The custom persona is saved and available for future panels.</div><div class="troubleshoot"><strong>If blocked:</strong> Check that the name, role, and system prompt are complete, then save again.</div></div>
     </section>
   </div>
   <footer>Nasscom Future Forge 2026 · K-Panel participant quick start</footer>
@@ -450,15 +456,14 @@ function showCopyStatus(button, message, state) {
   }, 1600));
 }
 
-document.querySelectorAll(".command").forEach((command) => {
-  const code = command.querySelector("pre code");
+document.querySelectorAll(".command-line").forEach((commandLine) => {
+  const code = commandLine.querySelector("code");
   if (!code) return;
-  const label = command.querySelector(".label")?.textContent.trim() || "command";
   const button = document.createElement("button");
   button.type = "button";
   button.className = "copy-button";
   button.textContent = "Copy";
-  button.setAttribute("aria-label", `Copy ${label}`);
+  button.setAttribute("aria-label", `Copy command: ${code.textContent}`);
   button.addEventListener("click", async () => {
     button.disabled = true;
     try {
@@ -468,7 +473,7 @@ document.querySelectorAll(".command").forEach((command) => {
       button.disabled = false;
     }
   });
-  command.append(button);
+  commandLine.append(button);
 });
 </script>
 </body>
