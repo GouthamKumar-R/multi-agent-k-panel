@@ -160,4 +160,4 @@ multi-agent-k-panel/
 
 Reach out to any of the session panel members or facilitators (**Aditi Sharma Goyal, Srivatsan Sundaravaradan, Kaushal Srivastava, Goutham Kumar, Vishnu RNS, Shashank Sharma**) during the live session at Taj Yeshwantpur!
 
-Happy hacking at **#NasscomFutureForge2026**! 🎉
+Happy **Learning at #NasscomFutureForge2026**! 🎉
