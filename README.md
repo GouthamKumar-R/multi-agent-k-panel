@@ -13,7 +13,7 @@ Welcome to the **K-Panel** hands-on multi-agent workshop! This repository serves
 - **Theme**: Deeptech at Scale — Spanning identity infrastructure, autonomous robotics, applied AI, and cybersecurity to answer how India builds enterprise-ready systems that hold up at scale.
 
 ### 🎙️ Workshop Panel & Facilitators
-- **Aditi Sharma Goyal** — Director, AI Product Management, NetApp
+- **Aditi Sharma Goyal**
 - **Srivatsan Sundaravaradan**
 - **Kaushal Srivastava**
 - **Goutham Kumar**
