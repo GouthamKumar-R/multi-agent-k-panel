@@ -145,6 +145,7 @@
     }
     .copy-button:hover { border-color: var(--cyan); background: #eef6ff; }
     .copy-button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+    .copy-button:disabled { cursor: wait; opacity: .7; }
     .copy-button[data-state="success"] { color: var(--green); border-color: #9bd1b7; background: #eefaf4; }
     .copy-button[data-state="error"] { color: #a23b32; border-color: #e3aaa5; background: #fff4f2; }
     .sr-only {
@@ -426,9 +427,9 @@ async function copyText(text) {
   textarea.setAttribute("readonly", "");
   textarea.style.position = "fixed";
   textarea.style.opacity = "0";
-  document.body.append(textarea);
-  textarea.select();
   try {
+    document.body.append(textarea);
+    textarea.select();
     return document.execCommand("copy");
   } catch {
     return false;
@@ -440,7 +441,8 @@ async function copyText(text) {
 function showCopyStatus(button, message, state) {
   button.textContent = message;
   button.dataset.state = state;
-  copyAnnouncement.textContent = message;
+  copyAnnouncement.textContent = "";
+  setTimeout(() => { copyAnnouncement.textContent = message; }, 0);
   clearTimeout(copyResetTimers.get(button));
   copyResetTimers.set(button, setTimeout(() => {
     button.textContent = "Copy";
@@ -458,8 +460,13 @@ document.querySelectorAll(".command").forEach((command) => {
   button.textContent = "Copy";
   button.setAttribute("aria-label", `Copy ${label}`);
   button.addEventListener("click", async () => {
-    const copied = await copyText(code.textContent);
-    showCopyStatus(button, copied ? "Copied" : "Copy failed", copied ? "success" : "error");
+    button.disabled = true;
+    try {
+      const copied = await copyText(code.textContent);
+      showCopyStatus(button, copied ? "Copied" : "Copy failed", copied ? "success" : "error");
+    } finally {
+      button.disabled = false;
+    }
   });
   command.append(button);
 });
