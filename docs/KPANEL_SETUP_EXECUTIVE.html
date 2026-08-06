@@ -269,17 +269,14 @@
     <section class="step-panel is-active" id="panel-step-1" data-panel="1" aria-labelledby="title-step-1">
       <div class="eyebrow">Step 01 · Participant readiness</div>
       <h2 id="title-step-1">Install Prerequisites</h2>
-      <p class="intro">Download or extract the repository, confirm Python 3.9+, and use an internet-connected machine.</p>
+      <p class="intro">Download and extract the workshop ZIP, confirm Python 3.9+, and use an internet-connected machine.</p>
       <div class="grid">
         <div class="command">
-          <div class="label">Clone or enter the supplied folder</div>
+          <div class="label">Download and enter the workshop folder</div>
+          <p>Visit <a href="https://tinyurl.com/netappnasscom">tinyurl.com/netappnasscom</a>, download the ZIP file, and extract it.</p>
           <div class="command-list">
-            <div class="platform-label">Option 1 · GitHub repository</div>
-            <div class="command-line"><code>git clone https://github.com/GouthamKumar-R/multi-agent-k-panel.git</code></div>
-            <div class="command-line"><code>cd multi-agent-k-panel</code></div>
-            <div class="platform-label">Option 2 · Workshop short link</div>
-            <div class="command-line"><code>git clone https://tinyurl.com/netappnasscom</code></div>
-            <div class="command-line"><code>cd netappnasscom</code></div>
+            <div class="platform-label">Open the extracted folder in Terminal</div>
+            <div class="command-line"><code>cd multi-agent-k-panel-main</code></div>
             <div class="platform-label">Verify Python</div>
             <div class="command-line"><code>python3 --version</code></div>
           </div>
@@ -307,7 +304,7 @@
             <div class="command-line"><code>start-in-windows.bat</code></div>
           </div>
         </div>
-        <div class="notes"><h3>Open after launch</h3><ul><li>Frontend: <code>http://127.0.0.1:8080/k-panel.html</code></li><li>Backend: <code>http://127.0.0.1:8877</code></li><li>The browser usually opens automatically.</li></ul></div>
+        <div class="notes"><h3>Open after launch</h3><ul><li>Frontend: <a href="http://127.0.0.1:8080/k-panel.html"><code>http://127.0.0.1:8080/k-panel.html</code></a></li><li>Backend: <a href="http://127.0.0.1:8877"><code>http://127.0.0.1:8877</code></a></li><li>The browser usually opens automatically.</li></ul></div>
       </div>
       <div class="callouts"><div class="success"><strong>Success:</strong> The K-Panel page loads and the backend URL responds.</div><div class="troubleshoot"><strong>If blocked:</strong> Check <code>backend.log</code>, <code>static.log</code>, and ports 8877/8080.</div></div>
     </section>
