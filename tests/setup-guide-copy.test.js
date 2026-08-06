@@ -79,16 +79,13 @@ test("adds one accessible copy button for an individual command", async () => {
 });
 
 test("renders individual copy rows only for shell commands", () => {
-  assert.equal((html.match(/class="command-line"/g) || []).length, 10);
+  assert.equal((html.match(/class="command-line"/g) || []).length, 7);
   assert.doesNotMatch(html, /class="command"[\s\S]*?<pre><code>/);
-  for (const command of [
-    "git clone https://github.com/GouthamKumar-R/multi-agent-k-panel.git",
-    "cd multi-agent-k-panel",
-    "git clone https://tinyurl.com/netappnasscom",
-    "cd netappnasscom",
-  ]) {
-    assert.match(html, new RegExp(command.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
-  }
+  assert.match(html, /href="https:\/\/tinyurl\.com\/netappnasscom"/);
+  assert.match(html, /<code>cd multi-agent-k-panel-main<\/code>/);
+  assert.doesNotMatch(html, /<code>git clone /);
+  assert.match(html, /href="http:\/\/127\.0\.0\.1:8080\/k-panel\.html"/);
+  assert.match(html, /href="http:\/\/127\.0\.0\.1:8877"/);
 });
 
 test("shows both white logos and the approved step structure", () => {
