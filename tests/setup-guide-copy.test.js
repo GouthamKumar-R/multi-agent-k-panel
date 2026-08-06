@@ -85,9 +85,15 @@ test("renders individual copy rows only for shell commands", () => {
 
 test("shows both white logos and the approved step structure", () => {
   assert.match(html, /\.brand-logo\s*\{[^}]*background:\s*#18324f/s);
-  assert.match(html, /Launch Multi-Agent Blueprint from your operating system/);
-  assert.match(html, /Run the multi-agent panel and visualize the PRD/);
-  assert.match(html, /Optional: Create a custom persona agent/);
+  for (const label of [
+    "Install Prerequisites",
+    "Launch Agentic Blueprint",
+    "Configure LLM",
+    "Run Agents. Build PRD",
+    "Custom Persona Agent",
+  ]) {
+    assert.match(html, new RegExp(label.replace(".", "\\.")));
+  }
 });
 
 test("falls back to a temporary textarea when Clipboard API rejects", async () => {
