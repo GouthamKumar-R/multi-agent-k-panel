@@ -26,12 +26,7 @@ higher-level abstractions:
                               driven by the frontend calling an endpoint
                               repeatedly.
 
-    4. SINGLE-AGENT CHAT   — the simplest possible agent invocation: one
-                              agent, one user message, optionally streamed
-                              back token-by-token (SSE) the way real chat UIs
-                              consume LLM output.
-
-    5. DOWNSTREAM PIPELINE — an example of chaining agent output into a
+    4. DOWNSTREAM PIPELINE — an example of chaining agent output into a
                               second, larger generation step (turning a
                               multi-agent discussion into a generated
                               artifact — here, a website prototype). This is
@@ -628,19 +623,6 @@ async def orchestrate_endpoint(request: Request):
     return {"status": status, "history": new_history, "next_agent": next_agent_id}
 
 
-# ============================================================================
-# PHASE 4 — SINGLE-AGENT CHAT ("the simplest possible agent invocation")
-# ----------------------------------------------------------------------------
-# Not every agent interaction needs a multi-step orchestration loop. Sometimes
-# you just want to talk to *one* agent directly, the way a normal chatbot UI
-# works. This endpoint shows the same "prompt in, text out" primitive from
-# Phase 2, but exposed as a standalone endpoint, with an added option to
-# stream the response back token-by-token (Server-Sent Events) instead of
-# waiting for the full reply — exactly how real chat UIs (ChatGPT, Claude,
-# etc.) render text incrementally as the model generates it.
-# ============================================================================
-
-
 @app.post("/chat")
 async def chat_endpoint(request: Request):
     data = await request.json()
@@ -753,7 +735,7 @@ async def chat_endpoint(request: Request):
 
 
 # ============================================================================
-# PHASE 5 — DOWNSTREAM PIPELINE ("turning agent output into a generated artifact")
+# PHASE 4 — DOWNSTREAM PIPELINE ("turning agent output into a generated artifact")
 # ----------------------------------------------------------------------------
 # This is the final stage of the story: once the panel discussion (Phase 3)
 # has produced a rich transcript + summary, we feed *that entire context* into
